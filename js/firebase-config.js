@@ -1,5 +1,5 @@
 window.GHAZY_FIREBASE_CONFIG = {
-const firebaseConfig = {
+
   apiKey: "AIzaSyBH9VBT_EzwIMnu5K-Ec17h8CbIzMAABeA",
   authDomain: "ghazy-auto.firebaseapp.com",
   projectId: "ghazy-auto",
