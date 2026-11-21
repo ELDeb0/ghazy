@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — الطريق ده مسدود | غازي أوتو</title>
+  <meta name="robots" content="noindex" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@600;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    @keyframes lane-scroll-once {
+      0% {
+        background-position-x: 0px;
+      }
+      65% {
+        background-position-x: 240px;
+      }
+      84% {
+        /* تباطؤ سريع وقت الفرامل */
+        background-position-x: 272px;
+      }
+      100% {
+        /* وقوف تام وثبات الطريق */
+        background-position-x: 280px;
+      }
+    }
+
+    @keyframes lost-car-drive-and-brake {
+      0% {
+        left: -155px;
+        transform: translateY(0px) rotate(0deg);
+      }
+      16% {
+        transform: translateY(-1.5px) rotate(0deg);
+      }
+      32% {
+        transform: translateY(0px) rotate(0deg);
+      }
+      50% {
+        transform: translateY(-1.5px) rotate(0deg);
+      }
+      72% {
+        left: calc(100% - 242px);
+        transform: translateY(0px) rotate(0deg);
+      }
+      83% {
+        /* ضغطة الفرامل: مقدمة العربية تنزل شوية لقدام */
+        left: calc(100% - 230px);
+        transform: translateY(0.5px) rotate(3.2deg);
+      }
+      91% {
+        /* ارتداد خفيف بعد الوقوف */
+        left: calc(100% - 234px);
+        transform: translateY(0px) rotate(-0.8deg);
+      }
+      100% {
+        /* ثبات كامل بدون رجوع للخلف */
+        left: calc(100% - 232px);
+        transform: translateY(0px) rotate(0deg);
+      }
+    }
+
+    @keyframes brake-light-flash {
+      0%, 68% {
+        opacity: 0;
+        filter: drop-shadow(0 0 0 rgba(220, 38, 38, 0));
+      }
+      74%, 89% {
+        opacity: 1;
+        filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.95));
+      }
+      100% {
+        opacity: 0.25;
+        filter: drop-shadow(0 0 0 rgba(220, 38, 38, 0));
+      }
+    }
+
+    @keyframes lost-car-tap-bump {
+      0% { transform: translateX(0) rotate(0deg); }
+      35% { transform: translateX(5px) rotate(2deg); }
+      70% { transform: translateX(-2px) rotate(-0.5deg); }
+      100% { transform: translateX(0) rotate(0deg); }
+    }
+
+    .scene-lane-dash {
+      background-image: repeating-linear-gradient(90deg, #d9b977 0 22px, transparent 22px 44px);
+      background-repeat: repeat-x;
+      animation: lane-scroll-once 2.9s cubic-bezier(.18, .82, .25, 1) forwards;
+      will-change: background-position;
+    }
+
+    .scene-lane-dash.is-stopped {
+      animation-play-state: paused;
+    }
+
+    .lost-car-motion {
+      animation: lost-car-drive-and-brake 2.9s cubic-bezier(.18, .82, .25, 1) forwards;
+      will-change: left, transform;
+    }
+
+    .lost-car-motion.is-driving .wheel-spin {
+      animation: spin .42s linear infinite;
+    }
+
+    .lost-car-motion:not(.is-driving) .wheel-spin {
+      animation: none;
+    }
+
+    /* بعد قلب العربية أفقياً (scale-x-[-1])، الجزء الخلفي بيكون جهة اليسار */
+    .brake-glow {
+      position: absolute;
+      bottom: 18px;
+      left: 5px;
+      width: 10px;
+      height: 7px;
+      border-radius: 3px;
+      background: #ef4444;
+      pointer-events: none;
+      opacity: 0;
+      animation: brake-light-flash 2.9s linear forwards;
+    }
+
+    .lost-car-tap {
+      animation: lost-car-tap-bump 0.35s ease-out forwards !important;
+    }
+
+    @media (max-width: 640px) {
+      @keyframes lost-car-drive-and-brake {
+        0% {
+          left: -125px;
+          transform: translateY(0px) rotate(0deg);
+        }
+        72% {
+          left: calc(100% - 198px);
+          transform: translateY(0px) rotate(0deg);
+        }
+        83% {
+          left: calc(100% - 186px);
+          transform: translateY(0.5px) rotate(2.8deg);
+        }
+        91% {
+          left: calc(100% - 190px);
+          transform: translateY(0px) rotate(-0.8deg);
+        }
+        100% {
+          left: calc(100% - 188px);
+          transform: translateY(0px) rotate(0deg);
+        }
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-paper text-ink antialiased flex flex-col">
+
+  <!-- الهيدر الموحد -->
+  <div id="site-header"></div>
+
+  <!-- محتوى صفحة 404 -->
+  <main class="mx-auto flex w-full max-w-4xl flex-1 flex-col items-center justify-center px-5 py-14 text-center">
+
+    <!-- لوحة معدنية 404 -->
+    <div class="mb-6 -rotate-2 transition-transform duration-300 hover:rotate-0">
+      <span class="inline-flex items-stretch overflow-hidden rounded-[10px] border-[4px] border-ink bg-[#f3efe6] shadow-[0_14px_28px_-10px_rgba(20,22,26,.55),inset_0_0_0_2px_#f3efe6,inset_0_0_0_4px_rgba(20,22,26,.35)]">
+        <span class="grid w-9 place-items-center bg-olive px-1 text-[11px] font-extrabold leading-tight text-paper [writing-mode:vertical-rl] rotate-180">
+          غازي أوتو
+        </span>
+        <span class="flex items-baseline gap-2 px-6 py-2 font-display text-5xl font-black leading-tight text-ink sm:text-6xl" dir="ltr">
+          404
+          <span class="text-sm font-extrabold text-clay" dir="rtl">طريق مسدود</span>
+        </span>
+      </span>
+    </div>
+
+    <!-- جملة بالخط اليدوي -->
+    <p class="font-hand text-3xl text-clay sm:text-4xl">
+      يظهر إن الـ GPS ودّاك في داهية يا هندسة!
+    </p>
+
+    <!-- العنوان الرئيسي -->
+    <h1 class="mt-3 font-display text-3xl font-black text-ink sm:text-4xl">
+      الصفحة دي مش موجودة.. أو اتباعت من بدري
+    </h1>
+
+    <!-- نص لطيف -->
+    <p class="mt-3 max-w-xl text-base leading-relaxed text-ink/75 sm:text-lg">
+      شكلك دخلت يمين بدل شمال، أو الرابط اللي فتحته قديم ومبقاش في المعرض.
+      اركن على جنب وارجع للرئيسية أو شوف العربيات الفابريكا المتاحة دلوقتي.
+    </p>
+
+    <!-- مشهد طريق متحرك يقف مع الفرامل وعربية تثبت عند آخر الطريق -->
+    <div dir="ltr" class="relative my-9 h-24 w-full max-w-xl overflow-hidden rounded-2xl border-2 border-ink/15 bg-sand/70 shadow-inner">
+
+      <!-- عمود ويافطة آخر الطريق على اليمين -->
+      <div class="pointer-events-none absolute bottom-[14px] right-8 flex flex-col items-center" aria-hidden="true">
+        <div class="flex items-center gap-1.5 rounded-lg border-2 border-ink bg-honey px-3 py-1 font-display text-xs font-black text-ink shadow-[0_4px_10px_rgba(20,22,26,.2)]" dir="rtl">
+          <span class="inline-block size-2 rounded-full bg-clay"></span>
+          <span>آخر الطريق</span>
+        </div>
+        <div class="h-5 w-1 bg-ink/80"></div>
+      </div>
+
+      <!-- الأسفلت والخط المتقطع المتحرك ثم الثابت -->
+      <div class="asphalt absolute inset-x-0 bottom-0 h-[14px]"></div>
+      <div id="roadLaneDash" class="scene-lane-dash absolute inset-x-0 bottom-[6px] h-[2px] opacity-90"></div>
+
+      <!-- العربية المتحركة التي تفرمل وتثبت مع الطريق -->
+      <button
+        type="button"
+        id="lostCarBtn"
+        title="اضغط هنا تكبس نور!"
+        aria-label="عربية تتحرك وتفرمل عند آخر الطريق - اضغط لكبس النور"
+        class="lost-car-motion is-driving group absolute bottom-[11px] left-0 w-36 cursor-pointer focus:outline-none"
+      >
+        <span class="brake-glow" aria-hidden="true"></span>
+        <div id="lostCarIllustration" class="scale-x-[-1]"></div>
+      </button>
+    </div>
+
+    <!-- أزرار الرجوع -->
+    <div class="flex flex-wrap items-center justify-center gap-4">
+      <a
+        href="index.html"
+        class="inline-flex items-center gap-2 rounded-full bg-olive px-7 py-3.5 font-display text-base font-extrabold text-paper shadow-md transition hover:bg-clay"
+      >
+        <span>ارجع للرئيسية</span>
+      </a>
+      <a
+        href="cars.html"
+        class="inline-flex items-center gap-2 rounded-full border-2 border-ink/20 bg-white px-7 py-3.5 font-display text-base font-extrabold text-ink transition hover:border-olive hover:bg-sand/50"
+      >
+        <span>تفرّج على العربيات المتاحة</span>
+      </a>
+    </div>
+  </main>
+
+  <!-- الفوتر وزر الواتساب -->
+  <div id="site-footer"></div>
+  <div id="whatsapp-float"></div>
+
+  <script src="js/default-data.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/components.js"></script>
+  <script>
+    (function () {
+      const UI = window.GhazyUI;
+      if (!UI) return;
+      UI.renderHeader('');
+      UI.renderFooter();
+      UI.renderWhatsAppButton();
+
+      const carBox = document.getElementById('lostCarIllustration');
+      const carBtn = document.getElementById('lostCarBtn');
+      const roadDash = document.getElementById('roadLaneDash');
+
+      if (carBox) {
+        carBox.innerHTML = UI.carSilhouetteSvg({ beam: true, className: 'h-auto w-full' });
+      }
+
+      if (carBtn) {
+        // إيقاف دوران العجل وحركة الطريق تماماً بعد انتهاء الفرامل والثبات
+        carBtn.addEventListener('animationend', (e) => {
+          if (e.animationName === 'lost-car-drive-and-brake') {
+            carBtn.classList.remove('is-driving');
+            if (roadDash) {
+              roadDash.classList.add('is-stopped');
+            }
+          }
+        });
+
+        // كبسة نور وهزة خفيفة في مكانها عند الضغط بدون رجوع للخلف
+        carBtn.addEventListener('click', () => {
+          carBtn.classList.remove('lost-car-tap');
+          void carBtn.offsetWidth;
+          carBtn.classList.add('lost-car-tap');
+
+          const beam = carBtn.querySelector('.beam');
+          if (beam) {
+            beam.style.opacity = '1';
+            beam.style.filter = 'brightness(1.5)';
+            setTimeout(() => {
+              beam.style.opacity = '';
+              beam.style.filter = '';
+            }, 350);
+          }
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
