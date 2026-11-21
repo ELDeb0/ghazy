@@ -1,9 +1,9 @@
 /* =========================================================
-   GHAZY AUTO — Shared UI Components (Exact visual replicas)
+   GHAZY AUTO — Shared UI Components (Secured & Firebase-Ready)
    ========================================================= */
 
 (function () {
-  const { labels, formatPrice, formatKm, whatsappLink, escapeHtml, getSettings, addInquiry } = window.GhazyStore;
+  const { labels, formatPrice, formatKm, whatsappLink, escapeHtml, sanitizeUrl, getSettings, addInquiry } = window.GhazyStore;
 
   function carSilhouetteSvg({ className = '', beam = false, body = '#14161a', accent = '#9a7339' } = {}) {
     const gradId = 'beam-g-' + Math.random().toString(36).slice(2, 7);
@@ -26,14 +26,14 @@
           </linearGradient>
         </defs>
         ${beam ? `<path class="beam" d="M10 40 L-110 14 L-110 66 Z" fill="url(#${gradId})" />` : ''}
-        <path d="M6 46V38q0-6 10-8l46-3 26-17h54q18 2 32 18l30 4q10 2 10 10v8H6Z" fill={body} />
+        <path d="M6 46V38q0-6 10-8l46-3 26-17h54q18 2 32 18l30 4q10 2 10 10v8H6Z" fill="${body}" />
         <path d="M68 28 90 13h26v15Zm34 0V13h36q12 2 22 15Z" fill="#d6dde3" opacity=".85" />
         <rect x="6" y="38" width="9" height="5" rx="2" fill="#f6d27a" />
         <rect x="206" y="37" width="8" height="5" rx="2" fill="${accent}" />
         ${wheel(55)}
         ${wheel(165)}
       </svg>
-    `.replace('fill={body}', `fill="${body}"`);
+    `;
   }
 
   function plateHtml(value, { unit = 'ج.م', size = 'md', className = '' } = {}) {
@@ -54,6 +54,7 @@
   function carCardHtml(car) {
     const sold = car.status === 'sold';
     const km = formatKm(car.mileage);
+    const safeImg = sanitizeUrl(car.imageUrl, true);
     const gaugeIcon = `<svg viewBox="0 0 24 24" class="size-4 fill-none stroke-current" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 17a8 8 0 1 1 16 0" /><path d="m12 17 4-5" /></svg>`;
     const gearIcon = `<svg viewBox="0 0 24 24" class="size-4 fill-none stroke-current" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="5" r="2" /><circle cx="18" cy="5" r="2" /><circle cx="12" cy="19" r="2" /><path d="M6 7v4h12V7M12 11v6" /></svg>`;
     const arrowIcon = `<svg viewBox="0 0 24 24" class="size-4 fill-none stroke-current" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6-6-6 6 6 6" /></svg>`;
@@ -62,8 +63,8 @@
       <a href="car.html?slug=${encodeURIComponent(car.slug)}" class="group block transition-transform duration-300 hover:-translate-y-1.5">
         <div class="headlight relative aspect-[4/3] overflow-hidden rounded-2xl bg-sand shadow-[0_18px_30px_-22px_rgba(20,22,26,.7)]">
           ${
-            car.imageUrl
-              ? `<img src="${escapeHtml(car.imageUrl)}" alt="${escapeHtml(car.imageAlt || car.name)}" loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-110 ${sold ? 'grayscale' : ''}" />`
+            safeImg
+              ? `<img src="${escapeHtml(safeImg)}" alt="${escapeHtml(car.imageAlt || car.name)}" loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-110 ${sold ? 'grayscale' : ''}" />`
               : ''
           }
           <span class="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-ink/55 to-transparent"></span>
@@ -183,6 +184,7 @@
     const container = document.getElementById('site-header');
     if (!container) return;
     const settings = getSettings();
+    const cleanTel = String(settings.phone || '').replace(/[^0-9+]/g, '');
     const navLinks = [
       { id: 'home', href: 'index.html', label: 'الرئيسية' },
       { id: 'cars', href: 'cars.html', label: 'السيارات' },
@@ -232,7 +234,7 @@
           </nav>
 
           <a
-            href="tel:${escapeHtml(settings.phone.replace(/\s/g, ''))}"
+            href="tel:${escapeHtml(cleanTel)}"
             class="start-btn relative hidden items-center gap-2 rounded-full bg-olive px-5 py-2 font-bold text-paper transition hover:bg-clay md:inline-flex"
             dir="ltr"
           >
@@ -258,7 +260,7 @@
             ${mobileLinks}
           </nav>
           <a
-            href="tel:${escapeHtml(settings.phone.replace(/\s/g, ''))}"
+            href="tel:${escapeHtml(cleanTel)}"
             dir="ltr"
             class="mt-4 flex items-center justify-center gap-2 rounded-full bg-olive px-5 py-3 font-bold text-paper"
           >
@@ -301,8 +303,11 @@
     const container = document.getElementById('site-footer');
     if (!container) return;
     const settings = getSettings();
+    const cleanTel = String(settings.phone || '').replace(/[^0-9+]/g, '');
+    const safeMapUrl = sanitizeUrl(settings.mapUrl, false);
+    const safeFb = sanitizeUrl(settings.facebook, false);
+    const safeIg = sanitizeUrl(settings.instagram, false);
 
-    // Intentionally NO link to admin.html anywhere in the public website
     container.innerHTML = `
       <footer class="relative mt-28 bg-olive-deep text-paper">
         <div dir="ltr" class="absolute inset-x-0 -top-10 h-10 overflow-hidden" aria-hidden="true">
@@ -328,22 +333,22 @@
             <p class="whitespace-pre-line text-paper/80">${escapeHtml(settings.address)}</p>
             <p class="mt-2 text-paper/80">${escapeHtml(settings.hours)}</p>
             ${
-              settings.mapUrl
-                ? `<a href="${escapeHtml(settings.mapUrl)}" target="_blank" rel="noreferrer" class="mt-3 inline-block font-bold underline decoration-honey underline-offset-4">افتح الخريطة</a>`
+              safeMapUrl
+                ? `<a href="${escapeHtml(safeMapUrl)}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-block font-bold underline decoration-honey underline-offset-4">افتح الخريطة</a>`
                 : ''
             }
           </div>
           <div>
             <h3 class="mb-3 font-display text-lg font-bold text-honey">كلمنا</h3>
-            <a href="tel:${escapeHtml(settings.phone.replace(/\s/g, ''))}" dir="ltr" class="block text-right text-2xl font-bold">
+            <a href="tel:${escapeHtml(cleanTel)}" dir="ltr" class="block text-right text-2xl font-bold">
               ${escapeHtml(settings.phone)}
             </a>
             <ul class="mt-4 space-y-1 text-paper/80">
               <li><a href="cars.html" class="hover:text-honey">كل السيارات</a></li>
               <li><a href="sell.html" class="hover:text-honey">بيع عربيتك</a></li>
               <li><a href="contact.html" class="hover:text-honey">ابعتلنا رسالة</a></li>
-              ${settings.facebook ? `<li><a href="${escapeHtml(settings.facebook)}" target="_blank" rel="noreferrer" class="hover:text-honey">فيسبوك</a></li>` : ''}
-              ${settings.instagram ? `<li><a href="${escapeHtml(settings.instagram)}" target="_blank" rel="noreferrer" class="hover:text-honey">انستجرام</a></li>` : ''}
+              ${safeFb ? `<li><a href="${escapeHtml(safeFb)}" target="_blank" rel="noopener noreferrer" class="hover:text-honey">فيسبوك</a></li>` : ''}
+              ${safeIg ? `<li><a href="${escapeHtml(safeIg)}" target="_blank" rel="noopener noreferrer" class="hover:text-honey">انستجرام</a></li>` : ''}
             </ul>
           </div>
         </div>
@@ -362,7 +367,7 @@
       <a
         href="${whatsappLink(settings.whatsapp, 'السلام عليكم، عايز أسأل عن عربية في غازي أوتو')}"
         target="_blank"
-        rel="noreferrer"
+        rel="noopener noreferrer"
         aria-label="تواصل واتساب"
         class="fixed bottom-5 left-5 z-40 flex items-center gap-2.5 rounded-full bg-[#1f8f4d] px-5 py-3.5 font-display font-extrabold text-white shadow-[0_14px_28px_-10px_rgba(31,143,77,.85)] transition hover:scale-105"
       >
@@ -454,7 +459,7 @@
           </label>
           <input name="website" tabIndex="-1" autoComplete="off" aria-hidden="true" class="absolute -left-[9999px] h-0 w-0 opacity-0" />
           <p data-form-error role="alert" class="hidden font-bold text-clay"></p>
-          <button type="submit" class="w-full rounded-full bg-clay px-8 py-3.5 font-display text-lg font-extrabold text-paper transition hover:bg-olive sm:w-auto">
+          <button type="submit" data-submit-btn class="w-full rounded-full bg-clay px-8 py-3.5 font-display text-lg font-extrabold text-paper transition hover:bg-olive disabled:opacity-50 sm:w-auto">
             ${escapeHtml(submitLabel)}
           </button>
         </form>
@@ -468,13 +473,14 @@
       });
 
       const form = container.querySelector('[data-inquiry-form]');
-      form.addEventListener('submit', (e) => {
+      form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const fd = new FormData(form);
         if (String(fd.get('website') || '').trim()) return;
         const name = String(fd.get('name') || '').trim();
         const phone = String(fd.get('phone') || '').trim();
         const errEl = form.querySelector('[data-form-error]');
+        const submitBtn = form.querySelector('[data-submit-btn]');
 
         if (name.length < 2) {
           errEl.textContent = 'اكتب اسمك بشكل صحيح.';
@@ -487,22 +493,34 @@
           return;
         }
 
-        addInquiry({
-          name,
-          phone,
-          kind: currentKind,
-          carId,
-          carName,
-          preferredTime: String(fd.get('preferredTime') || ''),
-          message: String(fd.get('message') || ''),
-        });
+        errEl.classList.add('hidden');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'جاري الإرسال...';
 
-        container.innerHTML = `
-          <div class="rounded-3xl border-2 border-olive/30 bg-olive/10 p-8 text-center">
-            <p class="font-hand text-3xl text-olive">وصلنا طلبك، شكرًا ليك</p>
-            <p class="mt-2 text-ink/75">هنكلمك على الموبايل في أقرب وقت، غالبًا خلال ساعات.</p>
-          </div>
-        `;
+        try {
+          await addInquiry({
+            name,
+            phone,
+            kind: currentKind,
+            carId,
+            carName,
+            preferredTime: String(fd.get('preferredTime') || ''),
+            message: String(fd.get('message') || ''),
+          });
+
+          container.innerHTML = `
+            <div class="rounded-3xl border-2 border-olive/30 bg-olive/10 p-8 text-center">
+              <p class="font-hand text-3xl text-olive">وصلنا طلبك، شكرًا ليك</p>
+              <p class="mt-2 text-ink/75">هنكلمك على الموبايل في أقرب وقت، غالبًا خلال ساعات.</p>
+            </div>
+          `;
+        } catch (err) {
+          console.error('Inquiry submit error:', err);
+          errEl.textContent = 'حصل خطأ أثناء إرسال الطلب، حاول تاني أو كلمنا واتساب.';
+          errEl.classList.remove('hidden');
+          submitBtn.disabled = false;
+          submitBtn.textContent = submitLabel;
+        }
       });
     }
 

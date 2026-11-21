@@ -12,24 +12,15 @@
   <script src="js/tailwind-config.js"></script>
   <link rel="stylesheet" href="css/styles.css" />
   <style>
-    .admin-panel-section {
-      display: none;
-    }
-    .admin-panel-section.active {
-      display: block;
-      animation: card-in 0.35s cubic-bezier(.2,.8,.2,1) both;
-    }
-    .admin-modal {
-      display: none;
-    }
-    .admin-modal.open {
-      display: flex;
-    }
+    .admin-panel-section { display: none; }
+    .admin-panel-section.active { display: block; animation: card-in 0.35s cubic-bezier(.2,.8,.2,1) both; }
+    .admin-modal { display: none; }
+    .admin-modal.open { display: flex; }
   </style>
 </head>
 <body class="min-h-screen bg-paper text-ink antialiased">
 
-  <!-- ==================== LOGIN GATE ==================== -->
+  <!-- ==================== FIREBASE LOGIN GATE ==================== -->
   <div id="loginGate" class="flex min-h-screen items-center justify-center px-5 py-12">
     <div class="w-full max-w-md overflow-hidden rounded-3xl border-2 border-ink/15 bg-white shadow-[0_24px_50px_-20px_rgba(20,22,26,.35)]">
       <div class="tread h-4 w-full"></div>
@@ -37,37 +28,58 @@
         <div class="mx-auto mb-5 grid size-16 place-items-center rounded-full bg-olive font-display text-3xl font-extrabold text-paper shadow-[0_0_0_4px_#ffffff,0_0_0_7px_var(--color-olive)]">
           <span class="relative">غ</span>
         </div>
-        <p class="font-hand text-2xl text-clay">إدارة المعرض بكل وضوح</p>
+        <p class="font-hand text-2xl text-clay">إدارة المعرض المحمية</p>
         <h1 class="mt-1 font-display text-3xl font-black text-ink">غازي أوتو</h1>
-        <p class="mt-2 text-sm text-ink/70">اكتب الرقم السري للدخول إلى لوحة التحكم وإدارة السيارات والطلبات</p>
+        <p class="mt-2 text-sm text-ink/70">سجّل الدخول بحساب الإدارة لإدارة السيارات والطلبات مباشرة</p>
 
-        <div id="loginError" class="mt-4 hidden rounded-2xl border border-clay/40 bg-clay/10 px-4 py-2.5 text-sm font-bold text-clay">
-          الرقم السري غير صحيح، جرّب مرة تانية
+        <div id="configWarning" class="mt-4 hidden rounded-2xl border border-honey bg-honey/20 px-4 py-3 text-right text-xs font-bold text-ink">
+          تنبيه: لم يتم وضع بيانات Firebase بعد في ملف <code>js/firebase-config.js</code>.
         </div>
 
-        <div class="mt-6 space-y-4">
-          <input
-            type="password"
-            id="pinInput"
-            maxlength="16"
-            placeholder="••••"
-            autocomplete="off"
-            dir="ltr"
-            class="w-full rounded-2xl border-2 border-ink/15 bg-paper px-4 py-3.5 text-center font-display text-2xl font-extrabold tracking-[0.4em] outline-none transition focus:border-olive focus:bg-white"
-          />
+        <div id="loginError" class="mt-4 hidden rounded-2xl border border-clay/40 bg-clay/10 px-4 py-2.5 text-sm font-bold text-clay"></div>
+        <div id="loginInfo" class="mt-4 hidden rounded-2xl border border-[#1f8f4d]/40 bg-[#1f8f4d]/10 px-4 py-2.5 text-sm font-bold text-[#1f8f4d]"></div>
+
+        <form id="loginForm" class="mt-6 space-y-4 text-right">
+          <label class="block">
+            <span class="font-display text-xs font-extrabold text-ink/75">البريد الإلكتروني للأدمن</span>
+            <input
+              type="email"
+              id="adminEmail"
+              required
+              dir="ltr"
+              autocomplete="email"
+              placeholder="admin@ghazyauto.com"
+              class="mt-1 w-full rounded-2xl border-2 border-ink/15 bg-paper px-4 py-3 text-left font-sans text-base outline-none transition focus:border-olive focus:bg-white"
+            />
+          </label>
+          <label class="block">
+            <span class="font-display text-xs font-extrabold text-ink/75">كلمة المرور</span>
+            <input
+              type="password"
+              id="adminPassword"
+              required
+              dir="ltr"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="mt-1 w-full rounded-2xl border-2 border-ink/15 bg-paper px-4 py-3 text-left font-sans text-base outline-none transition focus:border-olive focus:bg-white"
+            />
+          </label>
           <button
-            type="button"
+            type="submit"
             id="loginBtn"
-            class="w-full rounded-full bg-olive px-6 py-3.5 font-display text-lg font-extrabold text-paper transition hover:bg-clay"
+            class="w-full rounded-full bg-olive px-6 py-3.5 font-display text-lg font-extrabold text-paper transition hover:bg-clay disabled:opacity-50"
           >
             دخول لوحة الإدارة
           </button>
-        </div>
+        </form>
 
-        <div class="mt-6 border-t border-ink/10 pt-4">
-          <a href="index.html" class="inline-flex items-center gap-1.5 text-sm font-bold text-ink/60 transition hover:text-clay">
-            <span>العودة لواجهة المعرض</span>
-            <svg viewBox="0 0 24 24" class="size-4 fill-none stroke-current" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+        <div class="mt-5 flex items-center justify-between border-t border-ink/10 pt-4 text-xs">
+          <button type="button" id="forgotPassBtn" class="font-bold text-clay hover:underline">
+            نسيت كلمة المرور؟
+          </button>
+          <a href="index.html" class="inline-flex items-center gap-1 font-bold text-ink/60 transition hover:text-clay">
+            <span>واجهة المعرض</span>
+            <svg viewBox="0 0 24 24" class="size-3.5 fill-none stroke-current" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
           </a>
         </div>
       </div>
@@ -77,10 +89,8 @@
   <!-- ==================== MAIN ADMIN SHELL ==================== -->
   <div id="appShell" class="hidden min-h-screen flex-col">
 
-    <!-- Sticky Header matching index.html -->
     <header class="sticky top-0 z-40 border-b border-ink/10 bg-paper/95 backdrop-blur-xs">
       <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3">
-        <!-- Brand Mark -->
         <div class="flex items-center gap-3">
           <a href="index.html" target="_blank" rel="noopener" class="group flex items-center gap-3" title="فتح الموقع في تبويب جديد">
             <span class="relative grid size-11 place-items-center rounded-full bg-olive font-display text-xl font-extrabold text-paper shadow-[0_0_0_3px_var(--color-paper),0_0_0_5px_var(--color-olive)]">
@@ -90,14 +100,13 @@
             <div>
               <span class="flex items-center gap-2 font-display text-xl font-extrabold leading-none text-ink">
                 غازي أوتو
-                <span class="inline-block size-2.5 rounded-full bg-[#1f8f4d]" title="متصل بالموقع مباشرة"></span>
+                <span class="inline-block size-2.5 rounded-full bg-[#1f8f4d]" title="متصل بـ Firebase"></span>
               </span>
-              <span class="mt-1 block text-xs font-bold text-clay">لوحة الإدارة الحية</span>
+              <span id="loggedAdminEmail" class="mt-1 block text-xs font-bold text-clay">لوحة الإدارة السحابية</span>
             </div>
           </a>
         </div>
 
-        <!-- Desktop Navigation Tabs -->
         <nav class="hidden items-center gap-7 lg:flex" aria-label="أقسام الإدارة">
           <button type="button" data-tab="dashboard" class="nav-link admin-tab-btn relative py-1.5 font-display text-[16px] font-extrabold text-clay transition-colors">
             نظرة عامة
@@ -122,7 +131,6 @@
           </button>
         </nav>
 
-        <!-- Right Actions -->
         <div class="flex items-center gap-2.5">
           <a
             href="index.html"
@@ -147,7 +155,6 @@
         </div>
       </div>
 
-      <!-- Mobile Horizontal Tabs -->
       <div class="flex gap-2 overflow-x-auto border-t border-ink/10 bg-sand/40 px-4 py-2.5 lg:hidden">
         <button type="button" data-tab="dashboard" class="admin-tab-mobile shrink-0 rounded-full bg-olive px-4 py-1.5 font-display text-sm font-bold text-paper">نظرة عامة</button>
         <button type="button" data-tab="cars" class="admin-tab-mobile shrink-0 rounded-full border border-ink/15 bg-paper px-4 py-1.5 font-display text-sm font-bold text-ink">السيارات</button>
@@ -161,19 +168,17 @@
       </div>
     </header>
 
-    <!-- Main Container -->
     <main class="mx-auto w-full max-w-7xl flex-1 px-5 py-8">
 
       <!-- ==================== TAB 1: DASHBOARD ==================== -->
       <section id="tab-dashboard" class="admin-panel-section active space-y-8">
-        <!-- Hero Banner matching Showroom Aesthetic -->
         <div class="relative overflow-hidden rounded-3xl bg-olive p-7 text-paper shadow-[0_22px_45px_-22px_rgba(20,22,26,.8)] sm:p-9">
           <div class="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
             <div>
-              <p class="font-hand text-2xl text-honey">أهلاً يا مدير، المعرض شغال وجاهز</p>
+              <p class="font-hand text-2xl text-honey">أهلاً يا مدير، المعرض متصل بالسحابة</p>
               <h2 class="mt-1 font-display text-2xl font-black sm:text-3xl">ملخص المخزون وطلبات الزوار</h2>
               <p class="mt-2 max-w-xl text-sm text-paper/75">
-                أي عربية تضيفها أو تعدّل سعرها أو حالتها هنا بتظهر فوراً في صفحات المعرض، وأي عميل يبعت طلب بيوصلك هنا في نفس اللحظة.
+                أي عربية تضيفها أو تعدّل سعرها هنا بتتحفظ في Firebase وتظهر لكل الزوار فوراً على أي جهاز، وطلبات العملاء بتوصلك لحظياً.
               </p>
             </div>
             <div class="flex flex-wrap gap-3">
@@ -196,7 +201,6 @@
           <div id="dashCarIllustration" class="pointer-events-none mt-6 opacity-35" dir="ltr"></div>
         </div>
 
-        <!-- KPI Stats with License Plate Numbers -->
         <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
           <div class="rounded-3xl border-2 border-ink/10 bg-white p-6 shadow-sm">
             <span class="text-sm font-bold text-ink/65">إجمالي السيارات في المعرض</span>
@@ -223,9 +227,7 @@
           </div>
         </div>
 
-        <!-- Recent Cars & Inquiries Grid -->
         <div class="grid gap-7 lg:grid-cols-2">
-          <!-- Recent Cars -->
           <div class="overflow-hidden rounded-3xl border-2 border-ink/10 bg-white shadow-sm">
             <div class="flex items-center justify-between border-b border-ink/10 bg-sand/40 px-6 py-4">
               <h3 class="font-display text-lg font-extrabold text-ink">أحدث السيارات المعروضة</h3>
@@ -234,7 +236,6 @@
             <div id="recentCarsList" class="divide-y divide-ink/10"></div>
           </div>
 
-          <!-- Recent Inquiries -->
           <div class="overflow-hidden rounded-3xl border-2 border-ink/10 bg-white shadow-sm">
             <div class="flex items-center justify-between border-b border-ink/10 bg-sand/40 px-6 py-4">
               <h3 class="font-display text-lg font-extrabold text-ink">أحدث طلبات الزوار</h3>
@@ -261,7 +262,6 @@
           </button>
         </div>
 
-        <!-- Filter Bar -->
         <div class="flex flex-wrap items-center justify-between gap-3 rounded-3xl border-2 border-ink/10 bg-white p-4">
           <div class="flex flex-1 flex-wrap items-center gap-3">
             <input
@@ -297,7 +297,6 @@
           <span id="carsFilteredCount" class="rounded-full bg-sand px-3.5 py-1.5 font-display text-xs font-extrabold text-ink">0 عربية</span>
         </div>
 
-        <!-- Cars Table -->
         <div class="overflow-hidden rounded-3xl border-2 border-ink/10 bg-white shadow-sm">
           <div class="overflow-x-auto">
             <table class="w-full text-right">
@@ -323,7 +322,7 @@
         <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
             <h2 class="font-display text-2xl font-black text-ink sm:text-3xl">طلبات العملاء وبيع السيارات</h2>
-            <p class="mt-1 text-sm text-ink/70">جميع الطلبات الواردة من نماذج الموقع (سؤال، تجربة قيادة، أو بيع عربية) وتواصل مباشر عبر واتساب</p>
+            <p class="mt-1 text-sm text-ink/70">جميع الطلبات الواردة من الموقع محفوظة بأمان ولا تظهر إلا لحساب الإدارة</p>
           </div>
           <button
             type="button"
@@ -334,7 +333,6 @@
           </button>
         </div>
 
-        <!-- Filters -->
         <div class="flex flex-wrap items-center gap-3 rounded-3xl border-2 border-ink/10 bg-white p-4">
           <select
             id="inqStatusFilter"
@@ -359,7 +357,6 @@
           </select>
         </div>
 
-        <!-- Inquiries Table -->
         <div class="overflow-hidden rounded-3xl border-2 border-ink/10 bg-white shadow-sm">
           <div class="overflow-x-auto">
             <table class="w-full text-right">
@@ -384,7 +381,7 @@
       <section id="tab-settings" class="admin-panel-section space-y-6">
         <div>
           <h2 class="font-display text-2xl font-black text-ink sm:text-3xl">إعدادات المعرض وبيانات التواصل</h2>
-          <p class="mt-1 text-sm text-ink/70">أي تعديل هنا بيتحدّث فوراً في الهيدر، الفوتر، زر الواتساب، وكلمة المعرض في الموقع</p>
+          <p class="mt-1 text-sm text-ink/70">أي تعديل هنا بيتحدّث فوراً في الهيدر، الفوتر، زر الواتساب، وكلمة المعرض لكل الزوار</p>
         </div>
 
         <form id="settingsForm" onsubmit="saveSettingsForm(event)" class="rounded-3xl border-2 border-ink/10 bg-white p-6 shadow-sm sm:p-8">
@@ -416,22 +413,17 @@
 
             <label class="block">
               <span class="font-display text-sm font-extrabold text-ink">رابط خرائط جوجل (Google Maps)</span>
-              <input type="url" id="setMapUrl" dir="ltr" class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-left outline-none focus:border-olive" />
+              <input type="url" id="setMapUrl" dir="ltr" placeholder="https://maps.google.com/..." class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-left outline-none focus:border-olive" />
             </label>
 
             <label class="block">
               <span class="font-display text-sm font-extrabold text-ink">رابط صفحة فيسبوك</span>
-              <input type="url" id="setFacebook" dir="ltr" class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-left outline-none focus:border-olive" />
+              <input type="url" id="setFacebook" dir="ltr" placeholder="https://facebook.com/..." class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-left outline-none focus:border-olive" />
             </label>
 
-            <label class="block">
+            <label class="block sm:col-span-2">
               <span class="font-display text-sm font-extrabold text-ink">رابط حساب انستجرام</span>
-              <input type="url" id="setInstagram" dir="ltr" class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-left outline-none focus:border-olive" />
-            </label>
-
-            <label class="block">
-              <span class="font-display text-sm font-extrabold text-ink">تغيير الرقم السري للوحة التحكم (اتركه فارغاً للإبقاء على الحالي)</span>
-              <input type="password" id="setAdminPin" placeholder="الافتراضي: 2026" class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 outline-none focus:border-olive" />
+              <input type="url" id="setInstagram" dir="ltr" placeholder="https://instagram.com/..." class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-left outline-none focus:border-olive" />
             </label>
 
             <label class="block sm:col-span-2">
@@ -448,20 +440,28 @@
         </form>
       </section>
 
-      <!-- ==================== TAB 5: BACKUP ==================== -->
+      <!-- ==================== TAB 5: BACKUP & SEED ==================== -->
       <section id="tab-backup" class="admin-panel-section space-y-6">
         <div>
-          <h2 class="font-display text-2xl font-black text-ink sm:text-3xl">النسخ الاحتياطي وإدارة البيانات</h2>
-          <p class="mt-1 text-sm text-ink/70">حمّل نسخة احتياطية كاملة من سياراتك وطلباتك وإعداداتك في ملف JSON أو استرجعها في أي وقت</p>
+          <h2 class="font-display text-2xl font-black text-ink sm:text-3xl">النسخ الاحتياطي ومزامنة Firebase</h2>
+          <p class="mt-1 text-sm text-ink/70">صدّر نسخة احتياطية كاملة أو ارفع البيانات الافتراضية لقاعدة بيانات Firestore لأول مرة</p>
         </div>
 
         <div class="rounded-3xl border-2 border-ink/10 bg-white p-6 shadow-sm sm:p-8">
-          <p class="font-hand text-2xl text-clay">أمان بيانات معرضك أولوية</p>
+          <p class="font-hand text-2xl text-clay">إدارة قاعدة البيانات السحابية</p>
           <p class="mt-2 max-w-2xl text-sm text-ink/75">
-            البيانات محفوظة محلياً في المتصفح ومتزامنة لحظياً بين لوحة الإدارة وصفحات الموقع (<code>index.html</code>، <code>cars.html</code>، <code>car.html</code>). يُنصح بتحميل نسخة احتياطية بعد إضافة سيارات جديدة.
+            لو لسه رابط المشروع بـ Firebase لأول مرة وقاعدة البيانات فاضية، اضغط على زر <strong>رفع البيانات الافتراضية إلى Firebase</strong> عشان يتم إضافة السيارات التجريبية وإعدادات المعرض للسحابة فوراً.
           </p>
 
           <div class="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onclick="handleSeedFirebase()"
+              class="inline-flex items-center gap-2 rounded-full bg-clay px-6 py-3 font-display text-sm font-extrabold text-paper transition hover:bg-olive"
+            >
+              <span>رفع البيانات الافتراضية إلى Firebase</span>
+            </button>
+
             <button
               type="button"
               onclick="exportBackup()"
@@ -471,23 +471,14 @@
             </button>
 
             <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-ink/20 bg-paper px-6 py-3 font-display text-sm font-extrabold text-ink transition hover:border-olive">
-              <span>استيراد نسخة احتياطية</span>
+              <span>استيراد نسخة احتياطية إلى Firebase</span>
               <input type="file" accept=".json" class="hidden" onchange="importBackup(event)" />
             </label>
-
-            <button
-              type="button"
-              onclick="handleResetDefaults()"
-              class="inline-flex items-center gap-2 rounded-full border-2 border-clay/40 bg-clay/10 px-6 py-3 font-display text-sm font-extrabold text-clay transition hover:bg-clay hover:text-paper"
-            >
-              <span>استعادة البيانات الافتراضية</span>
-            </button>
           </div>
         </div>
       </section>
     </main>
 
-    <!-- Footer matching index.html -->
     <footer class="relative mt-20 bg-olive-deep text-paper">
       <div dir="ltr" class="absolute inset-x-0 -top-10 h-10 overflow-hidden" aria-hidden="true">
         <div class="absolute inset-x-0 bottom-0 h-3 bg-[#14161a]"></div>
@@ -496,7 +487,7 @@
       </div>
       <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-5 py-6 text-sm text-paper/70 sm:flex-row">
         <span class="font-display font-bold text-paper">غازي أوتو — لوحة الإدارة</span>
-        <span class="font-hand text-lg text-honey">مزامنة حية مع واجهة المعرض</span>
+        <span class="font-hand text-lg text-honey">محمي ومربوط بـ Firebase</span>
       </div>
     </footer>
   </div>
@@ -511,6 +502,7 @@
 
       <form id="carForm" onsubmit="saveCarForm(event)" class="space-y-5 p-6">
         <input type="hidden" id="carId" />
+        <input type="hidden" id="carCreatedAt" />
 
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="block">
@@ -595,7 +587,6 @@
           </label>
         </div>
 
-        <!-- Checkboxes -->
         <div class="flex flex-wrap gap-6 rounded-2xl border border-ink/10 bg-sand/50 px-4 py-3">
           <label class="inline-flex cursor-pointer items-center gap-2.5 font-display text-sm font-extrabold">
             <input type="checkbox" id="carFeatured" class="size-4 accent-clay" />
@@ -607,7 +598,6 @@
           </label>
         </div>
 
-        <!-- Main Image -->
         <div class="space-y-2">
           <label class="block">
             <span class="font-display text-sm font-bold">رابط الصورة الرئيسية (URL) أو ارفع من جهازك</span>
@@ -623,7 +613,6 @@
           </div>
         </div>
 
-        <!-- Gallery URLs -->
         <div class="space-y-2">
           <div class="flex items-center justify-between">
             <span class="font-display text-sm font-bold">صور إضافية للمعرض (رابط في كل سطر)</span>
@@ -635,7 +624,6 @@
           <textarea id="carGalleryUrls" dir="ltr" rows="2" placeholder="https://example.com/photo-1.jpg&#10;https://example.com/photo-2.jpg" class="w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 text-left text-xs outline-none focus:border-olive"></textarea>
         </div>
 
-        <!-- Description & Features -->
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="block">
             <span class="font-display text-sm font-bold">الوصف وحالة الفابريكا</span>
@@ -655,7 +643,7 @@
 
         <div class="flex justify-end gap-3 border-t border-ink/10 pt-4">
           <button type="button" onclick="closeCarModal()" class="rounded-full border-2 border-ink/15 bg-white px-5 py-2.5 font-display text-sm font-bold">إلغاء</button>
-          <button type="submit" class="rounded-full bg-clay px-7 py-2.5 font-display text-sm font-extrabold text-paper transition hover:bg-olive">حفظ ونشر على الموقع</button>
+          <button type="submit" id="saveCarSubmitBtn" class="rounded-full bg-clay px-7 py-2.5 font-display text-sm font-extrabold text-paper transition hover:bg-olive">حفظ ونشر على الموقع</button>
         </div>
       </form>
     </div>
@@ -671,11 +659,11 @@
       <form id="manualInquiryForm" onsubmit="saveManualInquiry(event)" class="space-y-4 p-6">
         <label class="block">
           <span class="font-display text-sm font-bold">اسم العميل *</span>
-          <input type="text" id="inqName" required class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+          <input type="text" id="inqName" required maxlength="80" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
         </label>
         <label class="block">
           <span class="font-display text-sm font-bold">رقم الموبايل *</span>
-          <input type="tel" id="inqPhone" dir="ltr" required placeholder="01xxxxxxxxx" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 text-right outline-none focus:border-olive" />
+          <input type="tel" id="inqPhone" dir="ltr" required maxlength="25" placeholder="01xxxxxxxxx" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 text-right outline-none focus:border-olive" />
         </label>
         <div class="grid gap-4 sm:grid-cols-2">
           <label class="block">
@@ -697,8 +685,8 @@
           <input type="text" id="inqPreferredTime" placeholder="مثال: غداً الساعة 5 مساءً" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
         </label>
         <label class="block">
-          <span class="font-display text-sm font-bold">تفاصيل الطلب / بيانات العربية المعروضة للبيع</span>
-          <textarea id="inqMessage" rows="3" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive"></textarea>
+          <span class="font-display text-sm font-bold">تفاصيل الطلب</span>
+          <textarea id="inqMessage" rows="3" maxlength="1500" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive"></textarea>
         </label>
         <div class="flex justify-end gap-3 border-t border-ink/10 pt-4">
           <button type="button" onclick="closeInquiryModal()" class="rounded-full border-2 border-ink/15 bg-white px-5 py-2.5 font-display text-sm font-bold">إلغاء</button>
@@ -711,8 +699,8 @@
   <!-- Toast Notification -->
   <div id="toast" class="pointer-events-none fixed bottom-5 left-5 z-50 translate-y-24 rounded-full border-2 border-honey bg-olive px-6 py-3 font-display text-sm font-extrabold text-paper opacity-0 shadow-xl transition-all duration-300"></div>
 
-  <!-- Core Site Scripts (Same Store & Components as index.html) -->
   <script src="js/default-data.js"></script>
+  <script src="js/firebase-config.js"></script>
   <script src="js/store.js"></script>
   <script src="js/components.js"></script>
 
@@ -723,7 +711,10 @@
 
       const FALLBACK_CAR_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='480' viewBox='0 0 640 480'%3E%3Crect width='640' height='480' fill='%231c2027'/%3E%3Ctext x='50%25' y='48%25' dominant-baseline='middle' text-anchor='middle' fill='%23f5f3ef' font-family='sans-serif' font-size='26' font-weight='bold'%3EGHAZY AUTO%3C/text%3E%3Ctext x='50%25' y='57%25' dominant-baseline='middle' text-anchor='middle' fill='%23d9b977' font-family='sans-serif' font-size='16'%3E%D8%BA%D8%A7%D8%B2%D9%8A %D8%A3%D9%88%D8%AA%D9%88%3C/text%3E%3C/svg%3E";
 
-      // Render signature car illustrations from components.js
+      if (!Store.isFirebaseConfigured()) {
+        document.getElementById('configWarning').classList.remove('hidden');
+      }
+
       const dashCarEl = document.getElementById('dashCarIllustration');
       if (dashCarEl && UI && UI.carSilhouetteSvg) {
         dashCarEl.innerHTML = UI.carSilhouetteSvg({ beam: true, body: '#f5f3ef', accent: '#d9b977', className: 'h-12 w-auto' });
@@ -743,7 +734,6 @@
         }, 3200);
       }
 
-      // Scroll progress bar matching components.js
       window.addEventListener('scroll', () => {
         const fill = document.getElementById('road-progress-fill');
         if (!fill) return;
@@ -753,47 +743,77 @@
         fill.style.width = pct + '%';
       }, { passive: true });
 
-      // ==================== AUTHENTICATION ====================
-      function getExpectedPin() {
-        const settings = Store.getSettings();
-        return String(settings.adminPin || window.GHAZY_DEFAULTS.settings.adminPin || '2026').trim();
-      }
-
-      function unlockAdmin() {
-        document.getElementById('loginGate').classList.add('hidden');
-        document.getElementById('appShell').classList.remove('hidden');
-        document.getElementById('appShell').classList.add('flex');
-        refreshAll();
-      }
-
-      function attemptLogin() {
-        const val = document.getElementById('pinInput').value.trim();
-        const err = document.getElementById('loginError');
-        if (val === getExpectedPin()) {
-          sessionStorage.setItem('ghazy_admin_unlocked', '1');
-          err.classList.add('hidden');
-          document.getElementById('pinInput').value = '';
-          unlockAdmin();
+      // ==================== FIREBASE AUTHENTICATION ====================
+      Store.onAuthChange((user) => {
+        if (user) {
+          document.getElementById('loginGate').classList.add('hidden');
+          document.getElementById('appShell').classList.remove('hidden');
+          document.getElementById('appShell').classList.add('flex');
+          document.getElementById('loggedAdminEmail').textContent = user.email || 'لوحة الإدارة السحابية';
+          refreshAll();
         } else {
-          err.classList.remove('hidden');
+          document.getElementById('appShell').classList.add('hidden');
+          document.getElementById('appShell').classList.remove('flex');
+          document.getElementById('loginGate').classList.remove('hidden');
         }
-      }
-
-      document.getElementById('loginBtn').addEventListener('click', attemptLogin);
-      document.getElementById('pinInput').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') attemptLogin();
       });
 
-      document.getElementById('logoutBtn').addEventListener('click', () => {
-        sessionStorage.removeItem('ghazy_admin_unlocked');
-        document.getElementById('appShell').classList.add('hidden');
-        document.getElementById('appShell').classList.remove('flex');
-        document.getElementById('loginGate').classList.remove('hidden');
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('adminEmail').value.trim();
+        const password = document.getElementById('adminPassword').value;
+        const errEl = document.getElementById('loginError');
+        const infoEl = document.getElementById('loginInfo');
+        const btn = document.getElementById('loginBtn');
+
+        errEl.classList.add('hidden');
+        infoEl.classList.add('hidden');
+        btn.disabled = true;
+        btn.textContent = 'جاري التحقق...';
+
+        try {
+          await Store.loginAdmin(email, password);
+          document.getElementById('adminPassword').value = '';
+        } catch (err) {
+          let msg = 'فشل تسجيل الدخول: تأكد من البريد الإلكتروني وكلمة المرور';
+          if (err && err.code === 'auth/too-many-requests') {
+            msg = 'تم إيقاف المحاولات مؤقتاً لكثرة المحاولات الخاطئة، انتظر قليلاً.';
+          } else if (err && err.message && err.message.includes('Firebase')) {
+            msg = err.message;
+          }
+          errEl.textContent = msg;
+          errEl.classList.remove('hidden');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'دخول لوحة الإدارة';
+        }
       });
 
-      if (sessionStorage.getItem('ghazy_admin_unlocked') === '1') {
-        unlockAdmin();
-      }
+      document.getElementById('forgotPassBtn').addEventListener('click', async () => {
+        const email = document.getElementById('adminEmail').value.trim();
+        const errEl = document.getElementById('loginError');
+        const infoEl = document.getElementById('loginInfo');
+        errEl.classList.add('hidden');
+        infoEl.classList.add('hidden');
+
+        if (!email) {
+          errEl.textContent = 'اكتب بريدك الإلكتروني في الخانة بالأعلى أولاً لإرسال رابط الاستعادة.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+        try {
+          await Store.resetAdminPassword(email);
+          infoEl.textContent = 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.';
+          infoEl.classList.remove('hidden');
+        } catch {
+          errEl.textContent = 'تعذر إرسال الرابط، تأكد من صحة البريد الإلكتروني.';
+          errEl.classList.remove('hidden');
+        }
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await Store.logoutAdmin();
+      });
 
       // ==================== TAB NAVIGATION ====================
       window.switchTab = function (tabName) {
@@ -858,7 +878,6 @@
           navBadge.classList.add('hidden');
         }
 
-        // License Plate KPIs
         document.getElementById('kpiTotalCarsPlate').innerHTML = UI.plateHtml(Store.formatPrice(cars.length), { unit: 'عربية', size: 'sm' });
         document.getElementById('kpiFeaturedSub').textContent = `${featuredCount} معروضة في الرئيسية`;
 
@@ -870,7 +889,6 @@
         document.getElementById('kpiInquiriesPlate').innerHTML = UI.plateHtml(Store.formatPrice(inquiries.length), { unit: 'طلب', size: 'sm' });
         document.getElementById('kpiNewInqSub').textContent = `${newInquiriesCount} طلبات جديدة بانتظار الرد`;
 
-        // Recent Cars
         const recentCarsEl = document.getElementById('recentCarsList');
         if (!cars.length) {
           recentCarsEl.innerHTML = '<div class="p-8 text-center text-sm text-ink/60">لا توجد سيارات مضافة حتى الآن</div>';
@@ -892,7 +910,6 @@
           `).join('');
         }
 
-        // Recent Inquiries
         const recentInqEl = document.getElementById('recentInquiriesList');
         if (!inquiries.length) {
           recentInqEl.innerHTML = '<div class="p-8 text-center text-sm text-ink/60">لا توجد طلبات واردة من الموقع بعد</div>';
@@ -1042,7 +1059,7 @@
                 <div class="text-[11px] text-ink/55">${Store.escapeHtml(dateLabel)}</div>
               </td>
               <td class="px-4 py-4 whitespace-nowrap" dir="ltr" style="text-align:right;">
-                <a href="tel:${Store.escapeHtml(item.phone)}" class="font-display font-bold text-olive underline decoration-clay underline-offset-4">${Store.escapeHtml(item.phone)}</a>
+                <a href="tel:${Store.escapeHtml(cleanPhone)}" class="font-display font-bold text-olive underline decoration-clay underline-offset-4">${Store.escapeHtml(item.phone)}</a>
               </td>
               <td class="px-4 py-4 whitespace-nowrap">
                 <span class="rounded-full px-3 py-1 text-xs font-extrabold ${item.kind === 'sellCar' ? 'bg-clay/15 text-clay' : 'bg-sand text-ink'}">${Store.escapeHtml(kindLabel)}</span>
@@ -1066,7 +1083,7 @@
               </td>
               <td class="px-5 py-4 whitespace-nowrap">
                 <div class="flex items-center gap-1.5">
-                  <a href="${Store.whatsappLink(waNum, waText)}" target="_blank" rel="noopener" class="rounded-full bg-[#1f8f4d] px-3.5 py-1.5 font-display text-xs font-bold text-white transition hover:opacity-90">واتساب</a>
+                  <a href="${Store.whatsappLink(waNum, waText)}" target="_blank" rel="noopener noreferrer" class="rounded-full bg-[#1f8f4d] px-3.5 py-1.5 font-display text-xs font-bold text-white transition hover:opacity-90">واتساب</a>
                   <button type="button" onclick="deleteInquiry('${Store.escapeHtml(item.id)}')" class="rounded-full border border-clay/30 bg-clay/10 px-3 py-1.5 text-xs font-bold text-clay hover:bg-clay hover:text-paper">حذف</button>
                 </div>
               </td>
@@ -1099,7 +1116,8 @@
       // ==================== CAR MODAL & CRUD ====================
       window.updateMainImgPreview = function (url) {
         const img = document.getElementById('carMainImgPreview');
-        img.src = url && url.trim() ? url.trim() : FALLBACK_CAR_IMG;
+        const safe = Store.sanitizeUrl(url, true);
+        img.src = safe || FALLBACK_CAR_IMG;
         img.onerror = () => { img.src = FALLBACK_CAR_IMG; };
       };
 
@@ -1109,13 +1127,13 @@
           const img = new Image();
           img.onload = function () {
             const canvas = document.createElement('canvas');
-            const maxW = 960;
+            const maxW = 900;
             const scale = img.width > maxW ? maxW / img.width : 1;
             canvas.width = Math.round(img.width * scale);
             canvas.height = Math.round(img.height * scale);
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            callback(canvas.toDataURL('image/jpeg', 0.82));
+            callback(canvas.toDataURL('image/jpeg', 0.78));
           };
           img.src = e.target.result;
         };
@@ -1128,7 +1146,7 @@
         compressImageFile(file, (dataUrl) => {
           document.getElementById('carImageUrl').value = dataUrl;
           window.updateMainImgPreview(dataUrl);
-          showToast('تم تجهيز الصورة الرئيسية بنجاح');
+          showToast('تم تجهيز وضغط الصورة الرئيسية');
         });
       };
 
@@ -1151,6 +1169,7 @@
           if (!car) return;
           document.getElementById('carModalTitle').textContent = 'تعديل بيانات العربية';
           document.getElementById('carId').value = car.id;
+          document.getElementById('carCreatedAt').value = car.createdAt || '';
           document.getElementById('carName').value = car.name || '';
           document.getElementById('carBrand').value = car.brand || '';
           document.getElementById('carYear').value = car.year || 2024;
@@ -1179,6 +1198,7 @@
         } else {
           document.getElementById('carModalTitle').textContent = 'إضافة عربية جديدة للمعرض';
           document.getElementById('carId').value = '';
+          document.getElementById('carCreatedAt').value = '';
           document.getElementById('carNegotiable').checked = true;
           window.updateMainImgPreview('');
         }
@@ -1190,18 +1210,18 @@
         document.getElementById('carModal').classList.remove('open');
       };
 
-      window.saveCarForm = function (e) {
+      window.saveCarForm = async function (e) {
         e.preventDefault();
         const cars = Store.getCars();
         const existingId = document.getElementById('carId').value;
         const name = document.getElementById('carName').value.trim();
         const year = Number(document.getElementById('carYear').value);
+        const btn = document.getElementById('saveCarSubmitBtn');
 
         let rawSlug = document.getElementById('carSlug').value.trim();
         if (!rawSlug) {
           rawSlug = Store.slugify(`${name}-${year}`);
         }
-        // Ensure unique slug
         if (cars.some((c) => c.slug === rawSlug && c.id !== existingId)) {
           rawSlug = `${rawSlug}-${Date.now().toString().slice(-4)}`;
         }
@@ -1220,6 +1240,7 @@
 
         const carObj = {
           id: existingId || 'car-' + Date.now(),
+          createdAt: document.getElementById('carCreatedAt').value || new Date().toISOString(),
           slug: rawSlug,
           name,
           brand: document.getElementById('carBrand').value.trim(),
@@ -1242,64 +1263,70 @@
           gallery: galleryList,
         };
 
+        btn.disabled = true;
+        btn.textContent = 'جاري الحفظ...';
+
         try {
-          if (existingId) {
-            const idx = cars.findIndex((c) => c.id === existingId);
-            if (idx !== -1) cars[idx] = carObj;
-            Store.saveCars(cars);
-            showToast('تم تحديث العربية ونشرها على الموقع');
-          } else {
-            cars.unshift(carObj);
-            Store.saveCars(cars);
-            showToast('تمت إضافة العربية ونشرها على الموقع');
-          }
+          await Store.upsertCar(carObj);
           window.closeCarModal();
           refreshAll();
+          showToast(existingId ? 'تم تحديث العربية ونشرها على الموقع' : 'تمت إضافة العربية ونشرها على الموقع');
         } catch (err) {
-          showToast('تعذر الحفظ: مساحة المتصفح ممتلئة، استخدم روابط صور أصغر.');
+          console.error(err);
+          showToast('تعذر الحفظ: تأكد من حجم الصور أو صلاحيات Firestore');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'حفظ ونشر على الموقع';
         }
       };
 
-      window.toggleCarFeatured = function (id) {
-        const cars = Store.getCars();
-        const car = cars.find((c) => c.id === id);
+      window.toggleCarFeatured = async function (id) {
+        const car = Store.getCars().find((c) => c.id === id);
         if (!car) return;
-        car.featured = !car.featured;
-        Store.saveCars(cars);
-        refreshAll();
-        showToast(car.featured ? 'تم تمييز العربية في الصفحة الرئيسية' : 'تم إلغاء تمييز العربية');
+        try {
+          await Store.upsertCar(Object.assign({}, car, { featured: !car.featured }));
+          showToast(!car.featured ? 'تم تمييز العربية في الصفحة الرئيسية' : 'تم إلغاء تمييز العربية');
+        } catch {
+          showToast('حدث خطأ أثناء التحديث');
+        }
       };
 
-      window.quickUpdateCarStatus = function (id, status) {
-        const cars = Store.getCars();
-        const car = cars.find((c) => c.id === id);
+      window.quickUpdateCarStatus = async function (id, status) {
+        const car = Store.getCars().find((c) => c.id === id);
         if (!car) return;
-        car.status = status;
-        Store.saveCars(cars);
-        renderDashboard();
-        showToast('تم تحديث حالة العربية على الموقع');
+        try {
+          await Store.upsertCar(Object.assign({}, car, { status }));
+          showToast('تم تحديث حالة العربية على الموقع');
+        } catch {
+          showToast('حدث خطأ أثناء تحديث الحالة');
+        }
       };
 
-      window.duplicateCar = function (id) {
-        const cars = Store.getCars();
-        const car = cars.find((c) => c.id === id);
+      window.duplicateCar = async function (id) {
+        const car = Store.getCars().find((c) => c.id === id);
         if (!car) return;
         const copy = JSON.parse(JSON.stringify(car));
         copy.id = 'car-' + Date.now();
+        copy.createdAt = new Date().toISOString();
         copy.name = car.name + ' (نسخة)';
         copy.slug = car.slug + '-' + Date.now().toString().slice(-4);
-        cars.unshift(copy);
-        Store.saveCars(cars);
-        refreshAll();
-        showToast('تم نسخ العربية بنجاح');
+        try {
+          await Store.upsertCar(copy);
+          showToast('تم نسخ العربية بنجاح');
+        } catch {
+          showToast('تعذر نسخ العربية');
+        }
       };
 
-      window.deleteCar = function (id) {
+      window.deleteCar = async function (id) {
         if (!confirm('متأكد إنك عايز تحذف العربية دي نهائياً من المعرض؟')) return;
-        const cars = Store.getCars().filter((c) => c.id !== id);
-        Store.saveCars(cars);
-        refreshAll();
-        showToast('تم حذف العربية');
+        try {
+          await Store.deleteCar(id);
+          refreshAll();
+          showToast('تم حذف العربية');
+        } catch {
+          showToast('تعذر حذف العربية');
+        }
       };
 
       // ==================== INQUIRIES CRUD ====================
@@ -1312,51 +1339,49 @@
         document.getElementById('inquiryModal').classList.remove('open');
       };
 
-      window.saveManualInquiry = function (e) {
+      window.saveManualInquiry = async function (e) {
         e.preventDefault();
-        Store.addInquiry({
-          name: document.getElementById('inqName').value,
-          phone: document.getElementById('inqPhone').value,
-          kind: document.getElementById('inqKind').value,
-          carName: document.getElementById('inqCarName').value,
-          preferredTime: document.getElementById('inqPreferredTime').value,
-          message: document.getElementById('inqMessage').value,
-        });
-        window.closeInquiryModal();
-        refreshAll();
-        showToast('تم تسجيل الطلب بنجاح');
+        try {
+          await Store.addInquiry({
+            name: document.getElementById('inqName').value,
+            phone: document.getElementById('inqPhone').value,
+            kind: document.getElementById('inqKind').value,
+            carName: document.getElementById('inqCarName').value,
+            preferredTime: document.getElementById('inqPreferredTime').value,
+            message: document.getElementById('inqMessage').value,
+          });
+          window.closeInquiryModal();
+          refreshAll();
+          showToast('تم تسجيل الطلب بنجاح');
+        } catch {
+          showToast('تعذر حفظ الطلب');
+        }
       };
 
-      window.updateInquiryStatus = function (id, status) {
-        const list = Store.getInquiries();
-        const item = list.find((i) => i.id === id);
-        if (!item) return;
-        item.status = status;
-        Store.saveInquiries(list);
-        renderDashboard();
-        showToast('تم تحديث حالة الطلب');
+      window.updateInquiryStatus = async function (id, status) {
+        try {
+          await Store.updateInquiryStatus(id, status);
+          showToast('تم تحديث حالة الطلب');
+        } catch {
+          showToast('تعذر تحديث حالة الطلب');
+        }
       };
 
-      window.deleteInquiry = function (id) {
-        if (!confirm('حذف هذا الطلب؟')) return;
-        const list = Store.getInquiries().filter((i) => i.id !== id);
-        Store.saveInquiries(list);
-        refreshAll();
-        showToast('تم حذف الطلب');
+      window.deleteInquiry = async function (id) {
+        if (!confirm('حذف هذا الطلب نهائياً؟')) return;
+        try {
+          await Store.deleteInquiry(id);
+          refreshAll();
+          showToast('تم حذف الطلب');
+        } catch {
+          showToast('تعذر حذف الطلب');
+        }
       };
 
       // ==================== SETTINGS SAVE ====================
-      window.saveSettingsForm = function (e) {
+      window.saveSettingsForm = async function (e) {
         e.preventDefault();
-        const current = Store.getSettings();
-        const newPin = document.getElementById('setAdminPin').value.trim();
-
-        if (newPin && newPin.length < 4) {
-          showToast('الرقم السري لازم يكون ٤ أرقام أو حروف على الأقل');
-          return;
-        }
-
-        const updated = Object.assign({}, current, {
+        const updated = {
           phone: document.getElementById('setPhone').value.trim(),
           whatsapp: document.getElementById('setWhatsapp').value.trim(),
           ownerName: document.getElementById('setOwnerName').value.trim(),
@@ -1366,15 +1391,28 @@
           facebook: document.getElementById('setFacebook').value.trim(),
           instagram: document.getElementById('setInstagram').value.trim(),
           ownerNote: document.getElementById('setOwnerNote').value.trim(),
-          adminPin: newPin || current.adminPin || '2026',
-        });
+        };
 
-        Store.saveSettings(updated);
-        document.getElementById('setAdminPin').value = '';
-        showToast('تم حفظ الإعدادات وتحديث الموقع مباشرة');
+        try {
+          await Store.saveSettings(updated);
+          showToast('تم حفظ الإعدادات وتحديث الموقع مباشرة');
+        } catch {
+          showToast('تعذر حفظ الإعدادات');
+        }
       };
 
-      // ==================== BACKUP & RESTORE ====================
+      // ==================== BACKUP & SEED ====================
+      window.handleSeedFirebase = async function () {
+        if (!confirm('سيتم رفع السيارات الافتراضية وإعدادات المعرض إلى Firebase Firestore. متابعة؟')) return;
+        try {
+          await Store.seedDefaultsToFirebase();
+          refreshAll();
+          showToast('تم رفع البيانات الافتراضية إلى Firebase بنجاح');
+        } catch (err) {
+          showToast(err.message || 'حدث خطأ أثناء الرفع');
+        }
+      };
+
       window.exportBackup = function () {
         const payload = {
           exportedAt: new Date().toISOString(),
@@ -1398,36 +1436,25 @@
         const file = e.target.files[0];
         if (!file) return;
         const reader = new FileReader();
-        reader.onload = function (ev) {
+        reader.onload = async function (ev) {
           try {
             const data = JSON.parse(ev.target.result);
             if (!data || !Array.isArray(data.cars)) throw new Error('Invalid');
-            Store.saveCars(data.cars);
-            if (data.settings) Store.saveSettings(Object.assign({}, window.GHAZY_DEFAULTS.settings, data.settings));
-            if (Array.isArray(data.inquiries)) Store.saveInquiries(data.inquiries);
+            await Store.saveCars(data.cars);
+            if (data.settings) await Store.saveSettings(data.settings);
             refreshAll();
-            showToast('تم استرجاع النسخة الاحتياطية وتحديث الموقع');
+            showToast('تم استيراد النسخة الاحتياطية وتحديث Firebase');
           } catch {
-            showToast('فشل قراءة الملف: تأكد إنه ملف JSON سليم');
+            showToast('فشل قراءة الملف أو رفعه: تأكد إنه ملف JSON سليم');
           }
         };
         reader.readAsText(file);
         e.target.value = '';
       };
 
-      window.handleResetDefaults = function () {
-        if (!confirm('هيتم مسح التعديلات الحالية واسترجاع بيانات المعرض الافتراضية. متأكد؟')) return;
-        Store.resetAllData();
+      // Real-time refresh whenever Firestore snapshot fires
+      window.addEventListener('ghazy:data-changed', () => {
         refreshAll();
-        showToast('تمت استعادة البيانات الافتراضية');
-      };
-
-      // Real-time sync across open tabs
-      window.addEventListener('ghazy:data-changed', (e) => {
-        if (e.detail && e.detail.type === 'storage') {
-          refreshAll();
-          showToast('وصل تحديث جديد من الموقع');
-        }
       });
     })();
   </script>
