@@ -1,0 +1,298 @@
+/* =========================================================
+   GHAZY AUTO — غازي أوتو | كفر الشيخ
+   Exact design tokens, typography, and car-inspired motion
+   ========================================================= */
+
+:root {
+  --font-sans: 'Tajawal', system-ui, sans-serif;
+  --font-display: 'Cairo', system-ui, sans-serif;
+  --font-hand: 'Aref Ruqaa', serif;
+  --color-paper: #f5f3ef;
+  --color-sand: #e4dfd5;
+  --color-ink: #14161a;
+  --color-olive: #1c2027;
+  --color-olive-deep: #0e1013;
+  --color-clay: #9a7339;
+  --color-honey: #d9b977;
+}
+
+html {
+  scroll-behavior: smooth;
+  direction: rtl;
+}
+
+body {
+  background-color: var(--color-paper) !important;
+  color: var(--color-ink) !important;
+  font-family: var(--font-sans) !important;
+  font-size: 17px;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.75;
+  overflow-x: hidden;
+  margin: 0;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  line-height: 1.3;
+}
+
+::selection {
+  background: var(--color-honey);
+  color: var(--color-ink);
+}
+
+/* Guaranteed font & palette classes */
+.font-sans { font-family: var(--font-sans) !important; }
+.font-display { font-family: var(--font-display) !important; }
+.font-hand { font-family: var(--font-hand) !important; }
+
+.bg-paper { background-color: #f5f3ef; }
+.bg-sand { background-color: #e4dfd5; }
+.bg-ink { background-color: #14161a; }
+.bg-olive { background-color: #1c2027; }
+.bg-olive-deep { background-color: #0e1013; }
+.bg-clay { background-color: #9a7339; }
+.bg-honey { background-color: #d9b977; }
+
+.text-paper { color: #f5f3ef; }
+.text-sand { color: #e4dfd5; }
+.text-ink { color: #14161a; }
+.text-olive { color: #1c2027; }
+.text-clay { color: #9a7339; }
+.text-honey { color: #d9b977; }
+
+.border-ink { border-color: #14161a; }
+.border-olive { border-color: #1c2027; }
+.border-clay { border-color: #9a7339; }
+.border-honey { border-color: #d9b977; }
+.border-paper { border-color: #f5f3ef; }
+
+.backdrop-blur-xs {
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+/* ---------- Car-inspired motion & texture ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity .8s cubic-bezier(.2,.7,.2,1), transform .8s cubic-bezier(.2,.7,.2,1);
+}
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.tread {
+  background-color: #14161a;
+  background-image:
+    repeating-linear-gradient(115deg, transparent 0 14px, rgba(246,240,228,.07) 14px 18px),
+    repeating-linear-gradient(65deg, transparent 0 14px, rgba(246,240,228,.07) 14px 18px);
+}
+
+.marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 60s linear infinite;
+  will-change: transform;
+}
+.tread:hover .marquee {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+
+.road-dash {
+  background-image: repeating-linear-gradient(90deg, var(--color-ink) 0 36px, transparent 36px 64px);
+  left: -64px !important;
+  right: 0 !important;
+  width: auto;
+  opacity: .8;
+  will-change: transform;
+  animation: road-move 1.2s linear infinite;
+}
+@keyframes road-move {
+  to { transform: translateX(64px); }
+}
+
+.asphalt {
+  background: #14161a;
+}
+
+.lane {
+  background-image: repeating-linear-gradient(90deg, var(--color-clay) 0 8px, transparent 8px 14px);
+  transition: opacity .25s;
+}
+.nav-link:hover .lane {
+  opacity: 1;
+}
+
+.wheel-spin {
+  animation: none;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.hero-car .wheel-spin,
+.drive-across .wheel-spin {
+  animation: spin .55s linear infinite;
+}
+
+@keyframes beam {
+  from { opacity: .55; }
+  to { opacity: 1; }
+}
+.beam {
+  animation: beam 1.6s ease-in-out infinite alternate;
+}
+
+.drive-across {
+  left: 110%;
+}
+.is-in .drive-across {
+  animation: drive 5.5s cubic-bezier(.4,.1,.3,1) forwards;
+}
+@keyframes drive {
+  from { left: 100%; }
+  to { left: 2%; }
+}
+
+.dial-arc {
+  animation: arc 2.4s .3s cubic-bezier(.5,0,.2,1) both;
+}
+@keyframes arc {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: var(--off); }
+}
+
+.needle {
+  animation: rev 2.6s .3s cubic-bezier(.5,0,.2,1) both;
+}
+@keyframes rev {
+  from { transform: rotate(-135deg); }
+  to { transform: rotate(var(--end)); }
+}
+
+.glass {
+  background: linear-gradient(135deg, rgba(255,255,255,.28), transparent 38%, transparent 70%, rgba(255,255,255,.08));
+  pointer-events: none;
+}
+
+.gear-in {
+  animation: gear-in .55s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes gear-in {
+  from { opacity: 0; transform: translateX(-22px); }
+}
+
+.card-in {
+  animation: card-in .6s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(22px) scale(.98); }
+}
+
+.headlight::after {
+  content: "";
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 40%;
+  background: linear-gradient(100deg, transparent, rgba(255,236,170,.55), transparent);
+  transform: translateX(-160%) skewX(-18deg);
+  pointer-events: none;
+}
+.group:hover .headlight::after {
+  animation: sweep .9s ease-out;
+}
+@keyframes sweep {
+  to { transform: translateX(380%) skewX(-18deg); }
+}
+
+.start-btn::before {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 2px solid var(--color-clay);
+  opacity: 0;
+  display: none;
+}
+@keyframes ring {
+  0% { transform: scale(.92); opacity: .7; }
+  70%, 100% { transform: scale(1.12); opacity: 0; }
+}
+
+.hero-road {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 64px;
+}
+.hero-road .asphalt-strip {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 22px;
+  background: #14161a;
+}
+.hero-car {
+  animation: cruise 1.4s ease-in-out infinite alternate;
+  will-change: transform;
+}
+@keyframes cruise {
+  to { transform: translateY(-2px); }
+}
+
+.spin-slow {
+  animation: spin 18s linear infinite;
+}
+.tire-load {
+  animation: spin .8s linear infinite;
+}
+
+/* Road progress bar under sticky header */
+.road-progress-track {
+  position: relative;
+  height: 4px;
+  background: rgba(20, 22, 26, 0.08);
+  overflow: hidden;
+}
+.road-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--color-clay), var(--color-honey));
+  transition: width 80ms linear;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-paper);
+}
+::-webkit-scrollbar-thumb {
+  background: #c7bfb0;
+  border-radius: 999px;
+  border: 2px solid var(--color-paper);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-clay);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
