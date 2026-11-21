@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>غازي أوتو | لوحة التحكم الإدارية</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Cairo:wght@600;800;900&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/tailwind-config.js"></script>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .admin-panel-section { display: none; }
+    .admin-panel-section.active { display: block; animation: card-in 0.35s cubic-bezier(.2,.8,.2,1) both; }
+    .admin-modal { display: none; }
+    .admin-modal.open { display: flex; }
+  </style>
+</head>
+<body class="min-h-screen bg-paper text-ink antialiased">
+
+  <!-- ==================== FIREBASE LOGIN GATE ==================== -->
+  <div id="loginGate" class="flex min-h-screen items-center justify-center px-5 py-12">
+    <div class="w-full max-w-md overflow-hidden rounded-3xl border-2 border-ink/15 bg-white shadow-[0_24px_50px_-20px_rgba(20,22,26,.35)]">
+      <div class="tread h-4 w-full"></div>
+      <div class="p-8 text-center sm:p-10">
+        <div class="mx-auto mb-5 grid size-16 place-items-center rounded-full bg-olive font-display text-3xl font-extrabold text-paper shadow-[0_0_0_4px_#ffffff,0_0_0_7px_var(--color-olive)]">
+          <span class="relative">غ</span>
+        </div>
+        <p class="font-hand text-2xl text-clay">إدارة المعرض المحمية</p>
+        <h1 class="mt-1 font-display text-3xl font-black text-ink">غازي أوتو</h1>
+        <p class="mt-2 text-sm text-ink/70">سجّل الدخول بحساب الإدارة لإدارة السيارات والطلبات مباشرة</p>
+
+        <div id="configWarning" class="mt-4 hidden rounded-2xl border border-honey bg-honey/20 px-4 py-3 text-right text-xs font-bold text-ink">
+          تنبيه: لم يتم وضع بيانات Firebase بعد في ملف <code>js/firebase-config.js</code>.
+        </div>
+
+        <div id="loginError" class="mt-4 hidden rounded-2xl border border-clay/40 bg-clay/10 px-4 py-2.5 text-sm font-bold text-clay"></div>
+        <div id="loginInfo" class="mt-4 hidden rounded-2xl border border-[#1f8f4d]/40 bg-[#1f8f4d]/10 px-4 py-2.5 text-sm font-bold text-[#1f8f4d]"></div>
+
+        <form id="loginForm" class="mt-6 space-y-4 text-right">
+          <label class="block">
+            <span class="font-display text-xs font-extrabold text-ink/75">البريد الإلكتروني للأدمن</span>
+            <input
+              type="email"
+              id="adminEmail"
+              required
+              dir="ltr"
+              autocomplete="email"
+              placeholder="admin@ghazyauto.com"
+              class="mt-1 w-full rounded-2xl border-2 border-ink/15 bg-paper px-4 py-3 text-left font-sans text-base outline-none transition focus:border-olive focus:bg-white"
+            />
+          </label>
+          <label class="block">
+            <span class="font-display text-xs font-extrabold text-ink/75">كلمة المرور</span>
+            <input
+              type="password"
+              id="adminPassword"
+              required
+              dir="ltr"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              class="mt-1 w-full rounded-2xl border-2 border-ink/15 bg-paper px-4 py-3 text-left font-sans text-base outline-none transition focus:border-olive focus:bg-white"
+            />
+          </label>
+          <button
+            type="submit"
+            id="loginBtn"
+            class="w-full rounded-full bg-olive px-6 py-3.5 font-display text-lg font-extrabold text-paper transition hover:bg-clay disabled:opacity-50"
+          >
+            دخول لوحة الإدارة
+          </button>
+        </form>
+
+        <div class="mt-5 flex items-center justify-between border-t border-ink/10 pt-4 text-xs">
+          <button type="button" id="forgotPassBtn" class="font-bold text-clay hover:underline">
+            نسيت كلمة المرور؟
+          </button>
+          <a href="index.html" class="inline-flex items-center gap-1 font-bold text-ink/60 transition hover:text-clay">
+            <span>واجهة المعرض</span>
+            <svg viewBox="0 0 24 24" class="size-3.5 fill-none stroke-current" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MAIN ADMIN SHELL ==================== -->
+  <div id="appShell" class="hidden min-h-screen flex-col">
+
+    <header class="sticky top-0 z-40 border-b border-ink/10 bg-paper/95 backdrop-blur-xs">
+      <div class="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-3">
+        <div class="flex items-center gap-3">
+          <a href="index.html" target="_blank" rel="noopener" class="group flex items-center gap-3" title="فتح الموقع في تبويب جديد">
+            <span class="relative grid size-11 place-items-center rounded-full bg-olive font-display text-xl font-extrabold text-paper shadow-[0_0_0_3px_var(--color-paper),0_0_0_5px_var(--color-olive)]">
+              <span class="absolute inset-[5px] rounded-full border-2 border-dashed border-paper/40 transition-transform duration-700 group-hover:rotate-180"></span>
+              <span class="relative">غ</span>
+            </span>
+            <div>
+              <span class="flex items-center gap-2 font-display text-xl font-extrabold leading-none text-ink">
+                غازي أوتو
+                <span class="inline-block size-2.5 rounded-full bg-[#1f8f4d]" title="متصل بـ Firebase"></span>
+              </span>
+              <span id="loggedAdminEmail" class="mt-1 block text-xs font-bold text-clay">لوحة الإدارة السحابية</span>
+            </div>
+          </a>
+        </div>
+
+        <nav class="hidden items-center gap-7 lg:flex" aria-label="أقسام الإدارة">
+          <button type="button" data-tab="dashboard" class="nav-link admin-tab-btn relative py-1.5 font-display text-[16px] font-extrabold text-clay transition-colors">
+            نظرة عامة
+            <span class="lane absolute inset-x-0 -bottom-1 h-[3px] rounded-full opacity-100"></span>
+          </button>
+          <button type="button" data-tab="cars" class="nav-link admin-tab-btn relative py-1.5 font-display text-[16px] font-bold text-ink transition-colors hover:text-clay">
+            السيارات (<span id="navCarsCount">0</span>)
+            <span class="lane absolute inset-x-0 -bottom-1 h-[3px] rounded-full opacity-0"></span>
+          </button>
+          <button type="button" data-tab="inquiries" class="nav-link admin-tab-btn relative inline-flex items-center gap-2 py-1.5 font-display text-[16px] font-bold text-ink transition-colors hover:text-clay">
+            <span>طلبات العملاء</span>
+            <span id="navNewInqBadge" class="hidden rounded-full bg-clay px-2 py-0.5 text-xs font-extrabold text-paper">0</span>
+            <span class="lane absolute inset-x-0 -bottom-1 h-[3px] rounded-full opacity-0"></span>
+          </button>
+          <button type="button" data-tab="settings" class="nav-link admin-tab-btn relative py-1.5 font-display text-[16px] font-bold text-ink transition-colors hover:text-clay">
+            إعدادات المعرض
+            <span class="lane absolute inset-x-0 -bottom-1 h-[3px] rounded-full opacity-0"></span>
+          </button>
+          <button type="button" data-tab="backup" class="nav-link admin-tab-btn relative py-1.5 font-display text-[16px] font-bold text-ink transition-colors hover:text-clay">
+            النسخ الاحتياطي
+            <span class="lane absolute inset-x-0 -bottom-1 h-[3px] rounded-full opacity-0"></span>
+          </button>
+        </nav>
+
+        <div class="flex items-center gap-2.5">
+          <a
+            href="index.html"
+            target="_blank"
+            rel="noopener"
+            class="inline-flex items-center gap-2 rounded-full bg-clay px-4 py-2 font-display text-sm font-extrabold text-paper transition hover:bg-olive"
+          >
+            <span>معاينة الموقع</span>
+            <svg viewBox="0 0 24 24" class="size-4 fill-none stroke-current" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <polyline points="15 3 21 3 21 9" />
+              <line x1="10" y1="14" x2="21" y2="3" />
+            </svg>
+          </a>
+          <button
+            type="button"
+            id="logoutBtn"
+            class="inline-flex items-center gap-1.5 rounded-full border-2 border-ink/15 bg-white px-4 py-2 font-display text-sm font-bold text-ink transition hover:border-ink"
+          >
+            خروج
+          </button>
+        </div>
+      </div>
+
+      <div class="flex gap-2 overflow-x-auto border-t border-ink/10 bg-sand/40 px-4 py-2.5 lg:hidden">
+        <button type="button" data-tab="dashboard" class="admin-tab-mobile shrink-0 rounded-full bg-olive px-4 py-1.5 font-display text-sm font-bold text-paper">نظرة عامة</button>
+        <button type="button" data-tab="cars" class="admin-tab-mobile shrink-0 rounded-full border border-ink/15 bg-paper px-4 py-1.5 font-display text-sm font-bold text-ink">السيارات</button>
+        <button type="button" data-tab="inquiries" class="admin-tab-mobile shrink-0 rounded-full border border-ink/15 bg-paper px-4 py-1.5 font-display text-sm font-bold text-ink">الطلبات</button>
+        <button type="button" data-tab="settings" class="admin-tab-mobile shrink-0 rounded-full border border-ink/15 bg-paper px-4 py-1.5 font-display text-sm font-bold text-ink">الإعدادات</button>
+        <button type="button" data-tab="backup" class="admin-tab-mobile shrink-0 rounded-full border border-ink/15 bg-paper px-4 py-1.5 font-display text-sm font-bold text-ink">النسخ الاحتياطي</button>
+      </div>
+
+      <div class="road-progress-track" aria-hidden="true">
+        <div id="road-progress-fill" class="road-progress-fill"></div>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-7xl flex-1 px-5 py-8">
+
+      <!-- ==================== TAB 1: DASHBOARD ==================== -->
+      <section id="tab-dashboard" class="admin-panel-section active space-y-8">
+        <div class="relative overflow-hidden rounded-3xl bg-olive p-7 text-paper shadow-[0_22px_45px_-22px_rgba(20,22,26,.8)] sm:p-9">
+          <div class="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+            <div>
+              <p class="font-hand text-2xl text-honey">أهلاً يا مدير، المعرض متصل بالسحابة</p>
+              <h2 class="mt-1 font-display text-2xl font-black sm:text-3xl">ملخص المخزون وطلبات الزوار</h2>
+              <p class="mt-2 max-w-xl text-sm text-paper/75">
+                أي عربية تضيفها أو تعدّل سعرها هنا بتتحفظ في Firebase وتظهر لكل الزوار فوراً على أي جهاز، وطلبات العملاء بتوصلك لحظياً.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onclick="openCarModal()"
+                class="inline-flex items-center gap-2 rounded-full bg-clay px-6 py-3.5 font-display text-base font-extrabold text-paper shadow-lg transition hover:bg-honey hover:text-ink"
+              >
+                <span>+ إضافة عربية جديدة</span>
+              </button>
+              <button
+                type="button"
+                onclick="switchTab('inquiries')"
+                class="inline-flex items-center gap-2 rounded-full border-2 border-paper/25 px-5 py-3.5 font-display text-sm font-bold text-paper transition hover:border-honey hover:text-honey"
+              >
+                <span>مراجعة الطلبات</span>
+              </button>
+            </div>
+          </div>
+          <div id="dashCarIllustration" class="pointer-events-none mt-6 opacity-35" dir="ltr"></div>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+          <div class="rounded-3xl border-2 border-ink/10 bg-white p-6 shadow-sm">
+            <span class="text-sm font-bold text-ink/65">إجمالي السيارات في المعرض</span>
+            <div id="kpiTotalCarsPlate" class="mt-3"></div>
+            <p id="kpiFeaturedSub" class="mt-3 text-xs font-bold text-clay">0 مميزة في الرئيسية</p>
+          </div>
+
+          <div class="rounded-3xl border-2 border-ink/10 bg-white p-6 shadow-sm">
+            <span class="text-sm font-bold text-ink/65">متاحة للبيع حالياً</span>
+            <div id="kpiAvailableCarsPlate" class="mt-3"></div>
+            <p id="kpiReservedSoldSub" class="mt-3 text-xs font-bold text-ink/60">0 محجوزة / مباعة</p>
+          </div>
+
+          <div class="rounded-3xl border-2 border-ink/10 bg-white p-6 shadow-sm">
+            <span class="text-sm font-bold text-ink/65">إجمالي قيمة المتاح</span>
+            <div id="kpiValuePlate" class="mt-3"></div>
+            <p class="mt-3 text-xs font-bold text-ink/60">حسب الأسعار المعروضة</p>
+          </div>
+
+          <div class="rounded-3xl border-2 border-ink/10 bg-white p-6 shadow-sm">
+            <span class="text-sm font-bold text-ink/65">طلبات واستفسارات العملاء</span>
+            <div id="kpiInquiriesPlate" class="mt-3"></div>
+            <p id="kpiNewInqSub" class="mt-3 text-xs font-bold text-[#1f8f4d]">0 طلبات جديدة</p>
+          </div>
+        </div>
+
+        <div class="grid gap-7 lg:grid-cols-2">
+          <div class="overflow-hidden rounded-3xl border-2 border-ink/10 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-ink/10 bg-sand/40 px-6 py-4">
+              <h3 class="font-display text-lg font-extrabold text-ink">أحدث السيارات المعروضة</h3>
+              <button type="button" onclick="switchTab('cars')" class="text-sm font-bold text-clay hover:underline">عرض الكل ←</button>
+            </div>
+            <div id="recentCarsList" class="divide-y divide-ink/10"></div>
+          </div>
+
+          <div class="overflow-hidden rounded-3xl border-2 border-ink/10 bg-white shadow-sm">
+            <div class="flex items-center justify-between border-b border-ink/10 bg-sand/40 px-6 py-4">
+              <h3 class="font-display text-lg font-extrabold text-ink">أحدث طلبات الزوار</h3>
+              <button type="button" onclick="switchTab('inquiries')" class="text-sm font-bold text-clay hover:underline">عرض الكل ←</button>
+            </div>
+            <div id="recentInquiriesList" class="divide-y divide-ink/10"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 2: CARS MANAGEMENT ==================== -->
+      <section id="tab-cars" class="admin-panel-section space-y-6">
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h2 class="font-display text-2xl font-black text-ink sm:text-3xl">إدارة سيارات المعرض</h2>
+            <p class="mt-1 text-sm text-ink/70">أضف سيارات جديدة، عدّل الأسعار والمواصفات، ميّز السيارات في الرئيسية، أو غيّر حالة البيع</p>
+          </div>
+          <button
+            type="button"
+            onclick="openCarModal()"
+            class="inline-flex items-center justify-center gap-2 rounded-full bg-clay px-6 py-3 font-display text-base font-extrabold text-paper transition hover:bg-olive"
+          >
+            <span>+ إضافة عربية جديدة</span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-between gap-3 rounded-3xl border-2 border-ink/10 bg-white p-4">
+          <div class="flex flex-1 flex-wrap items-center gap-3">
+            <input
+              type="text"
+              id="carSearchInput"
+              oninput="renderCarsTable()"
+              placeholder="ابحث باسم العربية، الماركة، أو سنة الصنع..."
+              class="min-w-[230px] flex-1 rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-2.5 text-sm outline-none transition focus:border-olive"
+            />
+            <select
+              id="carStatusFilter"
+              onchange="renderCarsTable()"
+              class="rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-2.5 text-sm font-bold outline-none focus:border-olive"
+            >
+              <option value="all">كل الحالات</option>
+              <option value="available">متاحة</option>
+              <option value="reserved">محجوزة</option>
+              <option value="sold">مباعة</option>
+            </select>
+            <select
+              id="carBodyFilter"
+              onchange="renderCarsTable()"
+              class="rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-2.5 text-sm font-bold outline-none focus:border-olive"
+            >
+              <option value="all">كل الفئات</option>
+              <option value="sedan">سيدان</option>
+              <option value="suv">SUV</option>
+              <option value="hatchback">هاتشباك</option>
+              <option value="coupe">كوبيه</option>
+              <option value="pickup">بيك أب</option>
+            </select>
+          </div>
+          <span id="carsFilteredCount" class="rounded-full bg-sand px-3.5 py-1.5 font-display text-xs font-extrabold text-ink">0 عربية</span>
+        </div>
+
+        <div class="overflow-hidden rounded-3xl border-2 border-ink/10 bg-white shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-right">
+              <thead class="border-b border-ink/10 bg-sand/50 font-display text-xs font-extrabold text-ink/80">
+                <tr>
+                  <th class="px-5 py-4">العربية</th>
+                  <th class="px-4 py-4">الموديل والعداد</th>
+                  <th class="px-4 py-4">المواصفات</th>
+                  <th class="px-4 py-4">السعر</th>
+                  <th class="px-4 py-4 text-center">الرئيسية</th>
+                  <th class="px-4 py-4">الحالة</th>
+                  <th class="px-5 py-4">إجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="carsTableBody" class="divide-y divide-ink/10 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 3: INQUIRIES ==================== -->
+      <section id="tab-inquiries" class="admin-panel-section space-y-6">
+        <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h2 class="font-display text-2xl font-black text-ink sm:text-3xl">طلبات العملاء وبيع السيارات</h2>
+            <p class="mt-1 text-sm text-ink/70">جميع الطلبات الواردة من الموقع محفوظة بأمان ولا تظهر إلا لحساب الإدارة</p>
+          </div>
+          <button
+            type="button"
+            onclick="openInquiryModal()"
+            class="inline-flex items-center justify-center gap-2 rounded-full bg-olive px-6 py-3 font-display text-sm font-extrabold text-paper transition hover:bg-clay"
+          >
+            <span>+ تسجيل طلب يدوي</span>
+          </button>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 rounded-3xl border-2 border-ink/10 bg-white p-4">
+          <select
+            id="inqStatusFilter"
+            onchange="renderInquiriesTable()"
+            class="rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-2.5 text-sm font-bold outline-none focus:border-olive"
+          >
+            <option value="all">كل الحالات</option>
+            <option value="new">جديد</option>
+            <option value="contacted">تم التواصل</option>
+            <option value="completed">مكتمل</option>
+          </select>
+          <select
+            id="inqKindFilter"
+            onchange="renderInquiriesTable()"
+            class="rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-2.5 text-sm font-bold outline-none focus:border-olive"
+          >
+            <option value="all">كل أنواع الطلبات</option>
+            <option value="question">عندي سؤال</option>
+            <option value="testDrive">تجربة قيادة</option>
+            <option value="sellCar">بيع عربية</option>
+            <option value="other">أخرى</option>
+          </select>
+        </div>
+
+        <div class="overflow-hidden rounded-3xl border-2 border-ink/10 bg-white shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-right">
+              <thead class="border-b border-ink/10 bg-sand/50 font-display text-xs font-extrabold text-ink/80">
+                <tr>
+                  <th class="px-5 py-4">العميل</th>
+                  <th class="px-4 py-4">الموبايل</th>
+                  <th class="px-4 py-4">نوع الطلب</th>
+                  <th class="px-4 py-4">العربية / الميعاد</th>
+                  <th class="px-4 py-4">التفاصيل</th>
+                  <th class="px-4 py-4">الحالة</th>
+                  <th class="px-5 py-4">تواصل وإجراء</th>
+                </tr>
+              </thead>
+              <tbody id="inquiriesTableBody" class="divide-y divide-ink/10 text-sm"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== TAB 4: SETTINGS ==================== -->
+      <section id="tab-settings" class="admin-panel-section space-y-6">
+        <div>
+          <h2 class="font-display text-2xl font-black text-ink sm:text-3xl">إعدادات المعرض وبيانات التواصل</h2>
+          <p class="mt-1 text-sm text-ink/70">أي تعديل هنا بيتحدّث فوراً في الهيدر، الفوتر، زر الواتساب، وكلمة المعرض لكل الزوار</p>
+        </div>
+
+        <form id="settingsForm" onsubmit="saveSettingsForm(event)" class="rounded-3xl border-2 border-ink/10 bg-white p-6 shadow-sm sm:p-8">
+          <div class="grid gap-5 sm:grid-cols-2">
+            <label class="block">
+              <span class="font-display text-sm font-extrabold text-ink">رقم الهاتف الظاهر في الموقع *</span>
+              <input type="text" id="setPhone" dir="ltr" required class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-right outline-none focus:border-olive" />
+            </label>
+
+            <label class="block">
+              <span class="font-display text-sm font-extrabold text-ink">رقم الواتساب (بالكود الدولي مثل 2010...) *</span>
+              <input type="text" id="setWhatsapp" dir="ltr" required class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-right outline-none focus:border-olive" />
+            </label>
+
+            <label class="block">
+              <span class="font-display text-sm font-extrabold text-ink">اسم صاحب المعرض / المسؤول</span>
+              <input type="text" id="setOwnerName" class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 outline-none focus:border-olive" />
+            </label>
+
+            <label class="block">
+              <span class="font-display text-sm font-extrabold text-ink">مواعيد العمل</span>
+              <input type="text" id="setHours" class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 outline-none focus:border-olive" />
+            </label>
+
+            <label class="block sm:col-span-2">
+              <span class="font-display text-sm font-extrabold text-ink">عنوان المعرض</span>
+              <textarea id="setAddress" rows="2" class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 outline-none focus:border-olive"></textarea>
+            </label>
+
+            <label class="block">
+              <span class="font-display text-sm font-extrabold text-ink">رابط خرائط جوجل (Google Maps)</span>
+              <input type="url" id="setMapUrl" dir="ltr" placeholder="https://maps.google.com/..." class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-left outline-none focus:border-olive" />
+            </label>
+
+            <label class="block">
+              <span class="font-display text-sm font-extrabold text-ink">رابط صفحة فيسبوك</span>
+              <input type="url" id="setFacebook" dir="ltr" placeholder="https://facebook.com/..." class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-left outline-none focus:border-olive" />
+            </label>
+
+            <label class="block sm:col-span-2">
+              <span class="font-display text-sm font-extrabold text-ink">رابط حساب انستجرام</span>
+              <input type="url" id="setInstagram" dir="ltr" placeholder="https://instagram.com/..." class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 text-left outline-none focus:border-olive" />
+            </label>
+
+            <label class="block sm:col-span-2">
+              <span class="font-display text-sm font-extrabold text-ink">كلمة المعرض للزوار (Owner Note)</span>
+              <textarea id="setOwnerNote" rows="3" class="mt-1.5 w-full rounded-xl border-2 border-ink/15 bg-paper/70 px-4 py-3 outline-none focus:border-olive"></textarea>
+            </label>
+          </div>
+
+          <div class="mt-6 flex flex-wrap items-center gap-4 border-t border-ink/10 pt-6">
+            <button type="submit" class="rounded-full bg-clay px-8 py-3.5 font-display text-base font-extrabold text-paper transition hover:bg-olive">
+              حفظ وتحديث الموقع فوراً
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <!-- ==================== TAB 5: BACKUP & SEED ==================== -->
+      <section id="tab-backup" class="admin-panel-section space-y-6">
+        <div>
+          <h2 class="font-display text-2xl font-black text-ink sm:text-3xl">النسخ الاحتياطي ومزامنة Firebase</h2>
+          <p class="mt-1 text-sm text-ink/70">صدّر نسخة احتياطية كاملة أو ارفع البيانات الافتراضية لقاعدة بيانات Firestore لأول مرة</p>
+        </div>
+
+        <div class="rounded-3xl border-2 border-ink/10 bg-white p-6 shadow-sm sm:p-8">
+          <p class="font-hand text-2xl text-clay">إدارة قاعدة البيانات السحابية</p>
+          <p class="mt-2 max-w-2xl text-sm text-ink/75">
+            لو لسه رابط المشروع بـ Firebase لأول مرة وقاعدة البيانات فاضية، اضغط على زر <strong>رفع البيانات الافتراضية إلى Firebase</strong> عشان يتم إضافة السيارات التجريبية وإعدادات المعرض للسحابة فوراً.
+          </p>
+
+          <div class="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onclick="handleSeedFirebase()"
+              class="inline-flex items-center gap-2 rounded-full bg-clay px-6 py-3 font-display text-sm font-extrabold text-paper transition hover:bg-olive"
+            >
+              <span>رفع البيانات الافتراضية إلى Firebase</span>
+            </button>
+
+            <button
+              type="button"
+              onclick="exportBackup()"
+              class="inline-flex items-center gap-2 rounded-full bg-olive px-6 py-3 font-display text-sm font-extrabold text-paper transition hover:bg-clay"
+            >
+              <span>تحميل نسخة احتياطية (JSON)</span>
+            </button>
+
+            <label class="inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-ink/20 bg-paper px-6 py-3 font-display text-sm font-extrabold text-ink transition hover:border-olive">
+              <span>استيراد نسخة احتياطية إلى Firebase</span>
+              <input type="file" accept=".json" class="hidden" onchange="importBackup(event)" />
+            </label>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="relative mt-20 bg-olive-deep text-paper">
+      <div dir="ltr" class="absolute inset-x-0 -top-10 h-10 overflow-hidden" aria-hidden="true">
+        <div class="absolute inset-x-0 bottom-0 h-3 bg-[#14161a]"></div>
+        <div class="road-dash absolute inset-x-0 bottom-[5px] h-[2px] [background-image:repeating-linear-gradient(90deg,#d9b977_0_26px,transparent_26px_52px)]"></div>
+        <div id="footerCarIllustration" class="road-car absolute bottom-[6px] left-[12%] w-28"></div>
+      </div>
+      <div class="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-5 py-6 text-sm text-paper/70 sm:flex-row">
+        <span class="font-display font-bold text-paper">غازي أوتو — لوحة الإدارة</span>
+        <span class="font-hand text-lg text-honey">محمي ومربوط بـ Firebase</span>
+      </div>
+    </footer>
+  </div>
+
+  <!-- ==================== CAR ADD / EDIT MODAL ==================== -->
+  <div id="carModal" class="admin-modal fixed inset-0 z-50 items-center justify-center bg-ink/70 p-4 backdrop-blur-xs">
+    <div class="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-3xl border-2 border-ink/20 bg-paper shadow-2xl">
+      <div class="sticky top-0 z-10 flex items-center justify-between border-b border-ink/10 bg-paper px-6 py-4">
+        <h3 id="carModalTitle" class="font-display text-xl font-black text-ink">إضافة عربية جديدة</h3>
+        <button type="button" onclick="closeCarModal()" class="rounded-full border border-ink/20 px-4 py-1.5 text-sm font-bold hover:bg-sand">إغلاق</button>
+      </div>
+
+      <form id="carForm" onsubmit="saveCarForm(event)" class="space-y-5 p-6">
+        <input type="hidden" id="carId" />
+        <input type="hidden" id="carCreatedAt" />
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block">
+            <span class="font-display text-sm font-bold">اسم السيارة / الفئة *</span>
+            <input type="text" id="carName" required placeholder="مثال: مرسيدس C200 AMG" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">الماركة (Brand) *</span>
+            <input type="text" id="carBrand" required placeholder="مثال: Mercedes" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">سنة الصنع *</span>
+            <input type="number" id="carYear" required min="1990" max="2028" value="2024" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">السعر (بالجنيه المصري) *</span>
+            <input type="number" id="carPrice" required min="0" step="1000" placeholder="1750000" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">نوع الهيكل</span>
+            <select id="carBodyType" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive">
+              <option value="sedan">سيدان</option>
+              <option value="suv">SUV</option>
+              <option value="hatchback">هاتشباك</option>
+              <option value="coupe">كوبيه</option>
+              <option value="pickup">بيك أب</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">الحالة الفنية</span>
+            <select id="carCondition" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive">
+              <option value="used">مستعملة</option>
+              <option value="new">زيرو</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">المسافة المقطوعة (كم)</span>
+            <input type="number" id="carMileage" min="0" value="0" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">سعة المحرك (CC)</span>
+            <input type="number" id="carEngineCc" min="0" placeholder="1600" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">ناقل الحركة</span>
+            <select id="carTransmission" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive">
+              <option value="automatic">أوتوماتيك</option>
+              <option value="manual">مانيوال</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">نوع الوقود</span>
+            <select id="carFuel" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive">
+              <option value="petrol">بنزين</option>
+              <option value="hybrid">هايبرد</option>
+              <option value="electric">كهرباء</option>
+              <option value="diesel">ديزل</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">اللون الخارجي</span>
+            <input type="text" id="carColor" placeholder="أسود ميتاليك" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">حالة العرض</span>
+            <select id="carStatus" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive">
+              <option value="available">متاحة للبيع</option>
+              <option value="reserved">محجوزة</option>
+              <option value="sold">مباعة</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="flex flex-wrap gap-6 rounded-2xl border border-ink/10 bg-sand/50 px-4 py-3">
+          <label class="inline-flex cursor-pointer items-center gap-2.5 font-display text-sm font-extrabold">
+            <input type="checkbox" id="carFeatured" class="size-4 accent-clay" />
+            <span>تمييز العربية في الصفحة الرئيسية</span>
+          </label>
+          <label class="inline-flex cursor-pointer items-center gap-2.5 font-display text-sm font-extrabold">
+            <input type="checkbox" id="carNegotiable" checked class="size-4 accent-clay" />
+            <span>السعر قابل للتفاوض</span>
+          </label>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block">
+            <span class="font-display text-sm font-bold">رابط الصورة الرئيسية (URL) أو ارفع من جهازك</span>
+            <input type="text" id="carImageUrl" dir="ltr" oninput="updateMainImgPreview(this.value)" placeholder="https://..." class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 text-left outline-none focus:border-olive" />
+          </label>
+          <div class="flex flex-wrap items-center gap-4">
+            <img id="carMainImgPreview" src="" alt="معاينة الصورة" class="h-20 w-32 rounded-xl border-2 border-ink/15 bg-sand object-cover" />
+            <label class="cursor-pointer rounded-full border-2 border-ink/20 bg-white px-4 py-2 text-xs font-extrabold transition hover:border-olive">
+              <span>رفع صورة من الجهاز</span>
+              <input type="file" accept="image/*" class="hidden" onchange="handleMainImageUpload(event)" />
+            </label>
+            <input type="text" id="carImageAlt" placeholder="وصف قصير للصورة (Alt)" class="flex-1 rounded-xl border-2 border-ink/15 bg-white px-3 py-2 text-xs outline-none focus:border-olive" />
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-display text-sm font-bold">صور إضافية للمعرض (رابط في كل سطر)</span>
+            <label class="cursor-pointer text-xs font-extrabold text-clay hover:underline">
+              <span>+ إضافة صورة من الجهاز للمعرض</span>
+              <input type="file" accept="image/*" class="hidden" onchange="handleGalleryImageUpload(event)" />
+            </label>
+          </div>
+          <textarea id="carGalleryUrls" dir="ltr" rows="2" placeholder="https://example.com/photo-1.jpg&#10;https://example.com/photo-2.jpg" class="w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 text-left text-xs outline-none focus:border-olive"></textarea>
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block">
+            <span class="font-display text-sm font-bold">الوصف وحالة الفابريكا</span>
+            <textarea id="carDescription" rows="4" placeholder="فابريكا بالكامل من الإكصدام للإكصدام، صيانات توكيل منتظمة..." class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 text-sm outline-none focus:border-olive"></textarea>
+          </label>
+
+          <label class="block">
+            <span class="font-display text-sm font-bold">التجهيزات والمميزات (ميزة في كل سطر)</span>
+            <textarea id="carFeaturesText" rows="4" placeholder="سقف بانوراما كهرباء&#10;كاميرا 360 درجة&#10;بصمة وتشغيل عن بعد" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 text-sm outline-none focus:border-olive"></textarea>
+          </label>
+        </div>
+
+        <label class="block">
+          <span class="font-display text-xs font-bold text-ink/60">الرابط المختصر (Slug) — يُترك فارغاً للتوليد التلقائي</span>
+          <input type="text" id="carSlug" dir="ltr" placeholder="mercedes-c200-2021" class="mt-1 w-full rounded-xl border border-ink/15 bg-white/80 px-3 py-2 text-left text-xs outline-none focus:border-olive" />
+        </label>
+
+        <div class="flex justify-end gap-3 border-t border-ink/10 pt-4">
+          <button type="button" onclick="closeCarModal()" class="rounded-full border-2 border-ink/15 bg-white px-5 py-2.5 font-display text-sm font-bold">إلغاء</button>
+          <button type="submit" id="saveCarSubmitBtn" class="rounded-full bg-clay px-7 py-2.5 font-display text-sm font-extrabold text-paper transition hover:bg-olive">حفظ ونشر على الموقع</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== MANUAL INQUIRY MODAL ==================== -->
+  <div id="inquiryModal" class="admin-modal fixed inset-0 z-50 items-center justify-center bg-ink/70 p-4 backdrop-blur-xs">
+    <div class="w-full max-w-lg rounded-3xl border-2 border-ink/20 bg-paper shadow-2xl">
+      <div class="flex items-center justify-between border-b border-ink/10 px-6 py-4">
+        <h3 class="font-display text-xl font-black text-ink">تسجيل طلب عميل يدوياً</h3>
+        <button type="button" onclick="closeInquiryModal()" class="rounded-full border border-ink/20 px-4 py-1.5 text-sm font-bold hover:bg-sand">إغلاق</button>
+      </div>
+      <form id="manualInquiryForm" onsubmit="saveManualInquiry(event)" class="space-y-4 p-6">
+        <label class="block">
+          <span class="font-display text-sm font-bold">اسم العميل *</span>
+          <input type="text" id="inqName" required maxlength="80" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+        </label>
+        <label class="block">
+          <span class="font-display text-sm font-bold">رقم الموبايل *</span>
+          <input type="tel" id="inqPhone" dir="ltr" required maxlength="25" placeholder="01xxxxxxxxx" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 text-right outline-none focus:border-olive" />
+        </label>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <label class="block">
+            <span class="font-display text-sm font-bold">نوع الطلب</span>
+            <select id="inqKind" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive">
+              <option value="question">عندي سؤال</option>
+              <option value="testDrive">تجربة قيادة</option>
+              <option value="sellCar">بيع عربية</option>
+              <option value="other">أخرى</option>
+            </select>
+          </label>
+          <label class="block">
+            <span class="font-display text-sm font-bold">العربية (اختياري)</span>
+            <input type="text" id="inqCarName" placeholder="مثال: كيا سبورتاج" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+          </label>
+        </div>
+        <label class="block">
+          <span class="font-display text-sm font-bold">ميعاد مفضل (اختياري)</span>
+          <input type="text" id="inqPreferredTime" placeholder="مثال: غداً الساعة 5 مساءً" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive" />
+        </label>
+        <label class="block">
+          <span class="font-display text-sm font-bold">تفاصيل الطلب</span>
+          <textarea id="inqMessage" rows="3" maxlength="1500" class="mt-1 w-full rounded-xl border-2 border-ink/15 bg-white px-4 py-2.5 outline-none focus:border-olive"></textarea>
+        </label>
+        <div class="flex justify-end gap-3 border-t border-ink/10 pt-4">
+          <button type="button" onclick="closeInquiryModal()" class="rounded-full border-2 border-ink/15 bg-white px-5 py-2.5 font-display text-sm font-bold">إلغاء</button>
+          <button type="submit" class="rounded-full bg-clay px-7 py-2.5 font-display text-sm font-extrabold text-paper transition hover:bg-olive">حفظ الطلب</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div id="toast" class="pointer-events-none fixed bottom-5 left-5 z-50 translate-y-24 rounded-full border-2 border-honey bg-olive px-6 py-3 font-display text-sm font-extrabold text-paper opacity-0 shadow-xl transition-all duration-300"></div>
+
+  <script src="js/default-data.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/components.js"></script>
+
+  <script>
+    (function () {
+      const Store = window.GhazyStore;
+      const UI = window.GhazyUI;
+
+      const FALLBACK_CAR_IMG = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='640' height='480' viewBox='0 0 640 480'%3E%3Crect width='640' height='480' fill='%231c2027'/%3E%3Ctext x='50%25' y='48%25' dominant-baseline='middle' text-anchor='middle' fill='%23f5f3ef' font-family='sans-serif' font-size='26' font-weight='bold'%3EGHAZY AUTO%3C/text%3E%3Ctext x='50%25' y='57%25' dominant-baseline='middle' text-anchor='middle' fill='%23d9b977' font-family='sans-serif' font-size='16'%3E%D8%BA%D8%A7%D8%B2%D9%8A %D8%A3%D9%88%D8%AA%D9%88%3C/text%3E%3C/svg%3E";
+
+      if (!Store.isFirebaseConfigured()) {
+        document.getElementById('configWarning').classList.remove('hidden');
+      }
+
+      const dashCarEl = document.getElementById('dashCarIllustration');
+      if (dashCarEl && UI && UI.carSilhouetteSvg) {
+        dashCarEl.innerHTML = UI.carSilhouetteSvg({ beam: true, body: '#f5f3ef', accent: '#d9b977', className: 'h-12 w-auto' });
+      }
+      const footerCarEl = document.getElementById('footerCarIllustration');
+      if (footerCarEl && UI && UI.carSilhouetteSvg) {
+        footerCarEl.innerHTML = UI.carSilhouetteSvg({ className: 'h-auto w-full' });
+      }
+
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.remove('translate-y-24', 'opacity-0');
+        clearTimeout(window.__ghazyAdminToast);
+        window.__ghazyAdminToast = setTimeout(() => {
+          el.classList.add('translate-y-24', 'opacity-0');
+        }, 3200);
+      }
+
+      window.addEventListener('scroll', () => {
+        const fill = document.getElementById('road-progress-fill');
+        if (!fill) return;
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - doc.clientHeight;
+        const pct = max > 0 ? Math.min(100, Math.max(0, (window.scrollY / max) * 100)) : 0;
+        fill.style.width = pct + '%';
+      }, { passive: true });
+
+      // ==================== FIREBASE AUTHENTICATION ====================
+      Store.onAuthChange((user) => {
+        if (user) {
+          document.getElementById('loginGate').classList.add('hidden');
+          document.getElementById('appShell').classList.remove('hidden');
+          document.getElementById('appShell').classList.add('flex');
+          document.getElementById('loggedAdminEmail').textContent = user.email || 'لوحة الإدارة السحابية';
+          refreshAll();
+        } else {
+          document.getElementById('appShell').classList.add('hidden');
+          document.getElementById('appShell').classList.remove('flex');
+          document.getElementById('loginGate').classList.remove('hidden');
+        }
+      });
+
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('adminEmail').value.trim();
+        const password = document.getElementById('adminPassword').value;
+        const errEl = document.getElementById('loginError');
+        const infoEl = document.getElementById('loginInfo');
+        const btn = document.getElementById('loginBtn');
+
+        errEl.classList.add('hidden');
+        infoEl.classList.add('hidden');
+        btn.disabled = true;
+        btn.textContent = 'جاري التحقق...';
+
+        try {
+          await Store.loginAdmin(email, password);
+          document.getElementById('adminPassword').value = '';
+        } catch (err) {
+          let msg = 'فشل تسجيل الدخول: تأكد من البريد الإلكتروني وكلمة المرور';
+          if (err && err.code === 'auth/too-many-requests') {
+            msg = 'تم إيقاف المحاولات مؤقتاً لكثرة المحاولات الخاطئة، انتظر قليلاً.';
+          } else if (err && err.message && err.message.includes('Firebase')) {
+            msg = err.message;
+          }
+          errEl.textContent = msg;
+          errEl.classList.remove('hidden');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'دخول لوحة الإدارة';
+        }
+      });
+
+      document.getElementById('forgotPassBtn').addEventListener('click', async () => {
+        const email = document.getElementById('adminEmail').value.trim();
+        const errEl = document.getElementById('loginError');
+        const infoEl = document.getElementById('loginInfo');
+        errEl.classList.add('hidden');
+        infoEl.classList.add('hidden');
+
+        if (!email) {
+          errEl.textContent = 'اكتب بريدك الإلكتروني في الخانة بالأعلى أولاً لإرسال رابط الاستعادة.';
+          errEl.classList.remove('hidden');
+          return;
+        }
+        try {
+          await Store.resetAdminPassword(email);
+          infoEl.textContent = 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني.';
+          infoEl.classList.remove('hidden');
+        } catch {
+          errEl.textContent = 'تعذر إرسال الرابط، تأكد من صحة البريد الإلكتروني.';
+          errEl.classList.remove('hidden');
+        }
+      });
+
+      document.getElementById('logoutBtn').addEventListener('click', async () => {
+        await Store.logoutAdmin();
+      });
+
+      // ==================== TAB NAVIGATION ====================
+      window.switchTab = function (tabName) {
+        document.querySelectorAll('.admin-panel-section').forEach((sec) => {
+          sec.classList.toggle('active', sec.id === 'tab-' + tabName);
+        });
+
+        document.querySelectorAll('.admin-tab-btn').forEach((btn) => {
+          const active = btn.dataset.tab === tabName;
+          btn.classList.toggle('text-clay', active);
+          btn.classList.toggle('font-extrabold', active);
+          btn.classList.toggle('text-ink', !active);
+          btn.classList.toggle('font-bold', !active);
+          const lane = btn.querySelector('.lane');
+          if (lane) {
+            lane.classList.toggle('opacity-100', active);
+            lane.classList.toggle('opacity-0', !active);
+          }
+        });
+
+        document.querySelectorAll('.admin-tab-mobile').forEach((btn) => {
+          const active = btn.dataset.tab === tabName;
+          btn.classList.toggle('bg-olive', active);
+          btn.classList.toggle('text-paper', active);
+          btn.classList.toggle('bg-paper', !active);
+          btn.classList.toggle('text-ink', !active);
+        });
+      };
+
+      document.querySelectorAll('.admin-tab-btn, .admin-tab-mobile').forEach((btn) => {
+        btn.addEventListener('click', () => window.switchTab(btn.dataset.tab));
+      });
+
+      // ==================== RENDER DASHBOARD ====================
+      function statusPillHtml(status) {
+        const label = Store.labels.status[status] || status;
+        if (status === 'available') {
+          return `<span class="inline-block rounded-full bg-[#1f8f4d]/15 px-3 py-1 text-xs font-extrabold text-[#1f8f4d]">${Store.escapeHtml(label)}</span>`;
+        }
+        if (status === 'reserved') {
+          return `<span class="inline-block rounded-full bg-honey/35 px-3 py-1 text-xs font-extrabold text-ink">${Store.escapeHtml(label)}</span>`;
+        }
+        return `<span class="inline-block rounded-full bg-ink text-xs font-extrabold text-paper px-3 py-1">${Store.escapeHtml(label)}</span>`;
+      }
+
+      function renderDashboard() {
+        const cars = Store.getCars();
+        const inquiries = Store.getInquiries();
+
+        const availableCars = cars.filter((c) => c.status === 'available');
+        const featuredCount = cars.filter((c) => c.featured).length;
+        const otherStatusCount = cars.length - availableCars.length;
+        const totalAvailableValue = availableCars.reduce((sum, c) => sum + Number(c.price || 0), 0);
+        const newInquiriesCount = inquiries.filter((i) => i.status === 'new').length;
+
+        document.getElementById('navCarsCount').textContent = cars.length;
+        const navBadge = document.getElementById('navNewInqBadge');
+        if (newInquiriesCount > 0) {
+          navBadge.textContent = newInquiriesCount;
+          navBadge.classList.remove('hidden');
+        } else {
+          navBadge.classList.add('hidden');
+        }
+
+        document.getElementById('kpiTotalCarsPlate').innerHTML = UI.plateHtml(Store.formatPrice(cars.length), { unit: 'عربية', size: 'sm' });
+        document.getElementById('kpiFeaturedSub').textContent = `${featuredCount} معروضة في الرئيسية`;
+
+        document.getElementById('kpiAvailableCarsPlate').innerHTML = UI.plateHtml(Store.formatPrice(availableCars.length), { unit: 'متاحة', size: 'sm' });
+        document.getElementById('kpiReservedSoldSub').textContent = `${otherStatusCount} محجوزة أو مباعة`;
+
+        document.getElementById('kpiValuePlate').innerHTML = UI.plateHtml(Store.formatPrice(totalAvailableValue), { unit: 'ج.م', size: 'sm' });
+
+        document.getElementById('kpiInquiriesPlate').innerHTML = UI.plateHtml(Store.formatPrice(inquiries.length), { unit: 'طلب', size: 'sm' });
+        document.getElementById('kpiNewInqSub').textContent = `${newInquiriesCount} طلبات جديدة بانتظار الرد`;
+
+        const recentCarsEl = document.getElementById('recentCarsList');
+        if (!cars.length) {
+          recentCarsEl.innerHTML = '<div class="p-8 text-center text-sm text-ink/60">لا توجد سيارات مضافة حتى الآن</div>';
+        } else {
+          recentCarsEl.innerHTML = cars.slice(0, 5).map((car) => `
+            <div class="flex items-center justify-between gap-3 px-6 py-3.5 transition hover:bg-paper/60">
+              <div class="flex items-center gap-3 min-w-0">
+                <img src="${Store.escapeHtml(car.imageUrl || FALLBACK_CAR_IMG)}" onerror="this.src='${FALLBACK_CAR_IMG}'" alt="" class="h-12 w-16 shrink-0 rounded-xl bg-sand object-cover" />
+                <div class="truncate">
+                  <div class="truncate font-display text-sm font-extrabold text-ink">${Store.escapeHtml(car.name)}</div>
+                  <div class="text-xs text-ink/65">${Store.escapeHtml(car.brand)} • ${Store.escapeHtml(car.year)} • ${Store.formatPrice(car.price)} ج.م</div>
+                </div>
+              </div>
+              <div class="flex shrink-0 items-center gap-2">
+                ${statusPillHtml(car.status)}
+                <button type="button" onclick="openCarModal('${Store.escapeHtml(car.id)}')" class="rounded-full border border-ink/20 px-3 py-1 text-xs font-bold hover:border-clay hover:text-clay">تعديل</button>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        const recentInqEl = document.getElementById('recentInquiriesList');
+        if (!inquiries.length) {
+          recentInqEl.innerHTML = '<div class="p-8 text-center text-sm text-ink/60">لا توجد طلبات واردة من الموقع بعد</div>';
+        } else {
+          recentInqEl.innerHTML = inquiries.slice(0, 5).map((inq) => `
+            <div class="flex items-center justify-between gap-3 px-6 py-3.5 transition hover:bg-paper/60">
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="font-display text-sm font-extrabold text-ink">${Store.escapeHtml(inq.name)}</span>
+                  <span class="rounded-full bg-sand px-2.5 py-0.5 text-[11px] font-bold text-ink">${Store.escapeHtml(Store.labels.kind[inq.kind] || inq.kind)}</span>
+                </div>
+                <div class="mt-0.5 truncate text-xs text-ink/65" dir="ltr" style="text-align:right;">
+                  ${Store.escapeHtml(inq.phone)} ${inq.carName ? '• ' + Store.escapeHtml(inq.carName) : ''}
+                </div>
+              </div>
+              <span class="shrink-0 rounded-full px-3 py-1 text-xs font-extrabold ${inq.status === 'new' ? 'bg-clay/15 text-clay' : inq.status === 'contacted' ? 'bg-honey/35 text-ink' : 'bg-[#1f8f4d]/15 text-[#1f8f4d]'}">
+                ${inq.status === 'new' ? 'جديد' : inq.status === 'contacted' ? 'تم التواصل' : 'مكتمل'}
+              </span>
+            </div>
+          `).join('');
+        }
+      }
+
+      // ==================== RENDER CARS TABLE ====================
+      window.renderCarsTable = function () {
+        const cars = Store.getCars();
+        const q = (document.getElementById('carSearchInput').value || '').trim().toLowerCase();
+        const statusFilter = document.getElementById('carStatusFilter').value;
+        const bodyFilter = document.getElementById('carBodyFilter').value;
+
+        const filtered = cars.filter((car) => {
+          const matchStatus = statusFilter === 'all' || car.status === statusFilter;
+          const matchBody = bodyFilter === 'all' || car.bodyType === bodyFilter;
+          const hay = `${car.name} ${car.brand} ${car.year} ${car.color || ''}`.toLowerCase();
+          const matchQ = !q || hay.includes(q);
+          return matchStatus && matchBody && matchQ;
+        });
+
+        document.getElementById('carsFilteredCount').textContent = `${filtered.length} عربية`;
+        const tbody = document.getElementById('carsTableBody');
+
+        if (!filtered.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="p-10 text-center text-ink/60">لا توجد سيارات مطابقة للبحث الحالي</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtered.map((car) => {
+          const km = Store.formatKm(car.mileage) || '٠ كم';
+          const bodyLabel = Store.labels.bodyType[car.bodyType] || car.bodyType || '';
+          const condLabel = Store.labels.condition[car.condition] || 'مستعملة';
+          const transLabel = Store.labels.transmission[car.transmission] || car.transmission || '';
+          const fuelLabel = Store.labels.fuel[car.fuel] || car.fuel || '';
+
+          return `
+            <tr class="transition hover:bg-paper/60">
+              <td class="px-5 py-4">
+                <div class="flex items-center gap-3.5">
+                  <img src="${Store.escapeHtml(car.imageUrl || FALLBACK_CAR_IMG)}" onerror="this.src='${FALLBACK_CAR_IMG}'" alt="" class="h-14 w-20 shrink-0 rounded-xl border border-ink/10 bg-sand object-cover" />
+                  <div>
+                    <a href="car.html?slug=${encodeURIComponent(car.slug)}" target="_blank" rel="noopener" class="font-display text-base font-extrabold text-ink transition hover:text-clay">
+                      ${Store.escapeHtml(car.name)}
+                    </a>
+                    <div class="mt-1 flex flex-wrap items-center gap-1.5 text-xs text-ink/65">
+                      <span class="font-bold text-olive">${Store.escapeHtml(car.brand)}</span>
+                      <span>•</span>
+                      <span>${Store.escapeHtml(bodyLabel)}</span>
+                      <span class="rounded bg-sand px-1.5 py-0.5 font-bold text-ink">${Store.escapeHtml(condLabel)}</span>
+                    </div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="font-display font-extrabold text-ink">${Store.escapeHtml(car.year)}</div>
+                <div class="text-xs text-ink/65">${Store.escapeHtml(km)}</div>
+              </td>
+              <td class="px-4 py-4">
+                <div class="text-xs font-bold text-ink">${Store.escapeHtml(transLabel)} • ${Store.escapeHtml(fuelLabel)}</div>
+                <div class="text-xs text-ink/60">${car.engineCc ? Store.escapeHtml(car.engineCc) + ' CC • ' : ''}${Store.escapeHtml(car.color || '')}</div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="font-display text-base font-black text-ink">${Store.formatPrice(car.price)} <span class="text-xs font-bold text-clay">ج.م</span></div>
+                ${car.negotiable ? '<span class="text-[11px] font-bold text-[#1f8f4d]">قابل للتفاوض</span>' : '<span class="text-[11px] text-ink/50">سعر نهائي</span>'}
+              </td>
+              <td class="px-4 py-4 text-center">
+                <button
+                  type="button"
+                  onclick="toggleCarFeatured('${Store.escapeHtml(car.id)}')"
+                  title="تمييز في الصفحة الرئيسية"
+                  class="inline-grid size-9 place-items-center rounded-full border-2 transition ${car.featured ? 'border-clay bg-honey/30 text-clay' : 'border-ink/15 text-ink/35 hover:border-ink/40'}"
+                >
+                  <svg viewBox="0 0 24 24" class="size-4" fill="${car.featured ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                  </svg>
+                </button>
+              </td>
+              <td class="px-4 py-4">
+                <select
+                  onchange="quickUpdateCarStatus('${Store.escapeHtml(car.id)}', this.value)"
+                  class="rounded-full border-2 border-ink/15 bg-paper px-3 py-1 text-xs font-extrabold outline-none focus:border-olive"
+                >
+                  <option value="available" ${car.status === 'available' ? 'selected' : ''}>متاحة</option>
+                  <option value="reserved" ${car.status === 'reserved' ? 'selected' : ''}>محجوزة</option>
+                  <option value="sold" ${car.status === 'sold' ? 'selected' : ''}>مباعة</option>
+                </select>
+              </td>
+              <td class="px-5 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-1.5">
+                  <button type="button" onclick="openCarModal('${Store.escapeHtml(car.id)}')" class="rounded-full bg-olive px-3.5 py-1.5 font-display text-xs font-bold text-paper transition hover:bg-clay">تعديل</button>
+                  <button type="button" onclick="duplicateCar('${Store.escapeHtml(car.id)}')" class="rounded-full border border-ink/20 bg-white px-3 py-1.5 text-xs font-bold hover:bg-sand">نسخ</button>
+                  <button type="button" onclick="deleteCar('${Store.escapeHtml(car.id)}')" class="rounded-full border border-clay/30 bg-clay/10 px-3 py-1.5 text-xs font-bold text-clay hover:bg-clay hover:text-paper">حذف</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      };
+
+      // ==================== RENDER INQUIRIES TABLE ====================
+      window.renderInquiriesTable = function () {
+        const list = Store.getInquiries();
+        const statusFilter = document.getElementById('inqStatusFilter').value;
+        const kindFilter = document.getElementById('inqKindFilter').value;
+
+        const filtered = list.filter((item) => {
+          const matchStatus = statusFilter === 'all' || item.status === statusFilter;
+          const matchKind = kindFilter === 'all' || item.kind === kindFilter;
+          return matchStatus && matchKind;
+        });
+
+        const tbody = document.getElementById('inquiriesTableBody');
+        if (!filtered.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="p-10 text-center text-ink/60">لا توجد طلبات مطابقة</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = filtered.map((item) => {
+          const dateLabel = item.createdAt ? new Date(item.createdAt).toLocaleDateString('ar-EG', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+          const kindLabel = Store.labels.kind[item.kind] || item.kind;
+          const cleanPhone = String(item.phone || '').replace(/\D/g, '');
+          const waNum = cleanPhone.startsWith('0') ? '2' + cleanPhone : cleanPhone;
+          const waText = `أهلاً أستاذ ${item.name}، معاك معرض غازي أوتو بخصوص طلبك (${kindLabel}${item.carName ? ' - ' + item.carName : ''}).`;
+
+          return `
+            <tr class="transition hover:bg-paper/60">
+              <td class="px-5 py-4">
+                <div class="font-display font-extrabold text-ink">${Store.escapeHtml(item.name)}</div>
+                <div class="text-[11px] text-ink/55">${Store.escapeHtml(dateLabel)}</div>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap" dir="ltr" style="text-align:right;">
+                <a href="tel:${Store.escapeHtml(cleanPhone)}" class="font-display font-bold text-olive underline decoration-clay underline-offset-4">${Store.escapeHtml(item.phone)}</a>
+              </td>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span class="rounded-full px-3 py-1 text-xs font-extrabold ${item.kind === 'sellCar' ? 'bg-clay/15 text-clay' : 'bg-sand text-ink'}">${Store.escapeHtml(kindLabel)}</span>
+              </td>
+              <td class="px-4 py-4">
+                <div class="font-bold text-ink">${Store.escapeHtml(item.carName || 'استفسار عام')}</div>
+                ${item.preferredTime ? `<div class="text-xs text-clay">الميعاد: ${Store.escapeHtml(item.preferredTime)}</div>` : ''}
+              </td>
+              <td class="max-w-xs px-4 py-4 text-xs leading-relaxed text-ink/80">
+                ${Store.escapeHtml(item.message || '—')}
+              </td>
+              <td class="px-4 py-4">
+                <select
+                  onchange="updateInquiryStatus('${Store.escapeHtml(item.id)}', this.value)"
+                  class="rounded-full border-2 border-ink/15 bg-paper px-3 py-1 text-xs font-extrabold outline-none focus:border-olive"
+                >
+                  <option value="new" ${item.status === 'new' ? 'selected' : ''}>جديد</option>
+                  <option value="contacted" ${item.status === 'contacted' ? 'selected' : ''}>تم التواصل</option>
+                  <option value="completed" ${item.status === 'completed' ? 'selected' : ''}>مكتمل</option>
+                </select>
+              </td>
+              <td class="px-5 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-1.5">
+                  <a href="${Store.whatsappLink(waNum, waText)}" target="_blank" rel="noopener noreferrer" class="rounded-full bg-[#1f8f4d] px-3.5 py-1.5 font-display text-xs font-bold text-white transition hover:opacity-90">واتساب</a>
+                  <button type="button" onclick="deleteInquiry('${Store.escapeHtml(item.id)}')" class="rounded-full border border-clay/30 bg-clay/10 px-3 py-1.5 text-xs font-bold text-clay hover:bg-clay hover:text-paper">حذف</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      };
+
+      // ==================== RENDER SETTINGS ====================
+      function renderSettings() {
+        const s = Store.getSettings();
+        document.getElementById('setPhone').value = s.phone || '';
+        document.getElementById('setWhatsapp').value = s.whatsapp || '';
+        document.getElementById('setOwnerName').value = s.ownerName || '';
+        document.getElementById('setHours').value = s.hours || '';
+        document.getElementById('setAddress').value = s.address || '';
+        document.getElementById('setMapUrl').value = s.mapUrl || '';
+        document.getElementById('setFacebook').value = s.facebook || '';
+        document.getElementById('setInstagram').value = s.instagram || '';
+        document.getElementById('setOwnerNote').value = s.ownerNote || '';
+      }
+
+      function refreshAll() {
+        renderDashboard();
+        window.renderCarsTable();
+        window.renderInquiriesTable();
+        renderSettings();
+      }
+
+      // ==================== CAR MODAL & CRUD ====================
+      window.updateMainImgPreview = function (url) {
+        const img = document.getElementById('carMainImgPreview');
+        const safe = Store.sanitizeUrl(url, true);
+        img.src = safe || FALLBACK_CAR_IMG;
+        img.onerror = () => { img.src = FALLBACK_CAR_IMG; };
+      };
+
+      function compressImageFile(file, callback) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            const canvas = document.createElement('canvas');
+            const maxW = 900;
+            const scale = img.width > maxW ? maxW / img.width : 1;
+            canvas.width = Math.round(img.width * scale);
+            canvas.height = Math.round(img.height * scale);
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            callback(canvas.toDataURL('image/jpeg', 0.78));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      window.handleMainImageUpload = function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        compressImageFile(file, (dataUrl) => {
+          document.getElementById('carImageUrl').value = dataUrl;
+          window.updateMainImgPreview(dataUrl);
+          showToast('تم تجهيز وضغط الصورة الرئيسية');
+        });
+      };
+
+      window.handleGalleryImageUpload = function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        compressImageFile(file, (dataUrl) => {
+          const box = document.getElementById('carGalleryUrls');
+          box.value = box.value.trim() ? box.value.trim() + '\n' + dataUrl : dataUrl;
+          showToast('تمت إضافة الصورة إلى معرض العربية');
+        });
+      };
+
+      window.openCarModal = function (carId = '') {
+        const form = document.getElementById('carForm');
+        form.reset();
+
+        if (carId) {
+          const car = Store.getCars().find((c) => c.id === carId);
+          if (!car) return;
+          document.getElementById('carModalTitle').textContent = 'تعديل بيانات العربية';
+          document.getElementById('carId').value = car.id;
+          document.getElementById('carCreatedAt').value = car.createdAt || '';
+          document.getElementById('carName').value = car.name || '';
+          document.getElementById('carBrand').value = car.brand || '';
+          document.getElementById('carYear').value = car.year || 2024;
+          document.getElementById('carPrice').value = car.price || 0;
+          document.getElementById('carBodyType').value = car.bodyType || 'sedan';
+          document.getElementById('carCondition').value = car.condition || 'used';
+          document.getElementById('carMileage').value = car.mileage ?? 0;
+          document.getElementById('carEngineCc').value = car.engineCc || '';
+          document.getElementById('carTransmission').value = car.transmission || 'automatic';
+          document.getElementById('carFuel').value = car.fuel || 'petrol';
+          document.getElementById('carColor').value = car.color || '';
+          document.getElementById('carStatus').value = car.status || 'available';
+          document.getElementById('carFeatured').checked = Boolean(car.featured);
+          document.getElementById('carNegotiable').checked = car.negotiable !== false;
+          document.getElementById('carImageUrl').value = car.imageUrl || '';
+          document.getElementById('carImageAlt').value = car.imageAlt || '';
+          document.getElementById('carSlug').value = car.slug || '';
+          document.getElementById('carDescription').value = car.description || '';
+          document.getElementById('carFeaturesText').value = Array.isArray(car.features)
+            ? car.features.map((f) => f.text || f).join('\n')
+            : '';
+          document.getElementById('carGalleryUrls').value = Array.isArray(car.gallery)
+            ? car.gallery.map((g) => g.url || g).join('\n')
+            : '';
+          window.updateMainImgPreview(car.imageUrl || '');
+        } else {
+          document.getElementById('carModalTitle').textContent = 'إضافة عربية جديدة للمعرض';
+          document.getElementById('carId').value = '';
+          document.getElementById('carCreatedAt').value = '';
+          document.getElementById('carNegotiable').checked = true;
+          window.updateMainImgPreview('');
+        }
+
+        document.getElementById('carModal').classList.add('open');
+      };
+
+      window.closeCarModal = function () {
+        document.getElementById('carModal').classList.remove('open');
+      };
+
+      window.saveCarForm = async function (e) {
+        e.preventDefault();
+        const cars = Store.getCars();
+        const existingId = document.getElementById('carId').value;
+        const name = document.getElementById('carName').value.trim();
+        const year = Number(document.getElementById('carYear').value);
+        const btn = document.getElementById('saveCarSubmitBtn');
+
+        let rawSlug = document.getElementById('carSlug').value.trim();
+        if (!rawSlug) {
+          rawSlug = Store.slugify(`${name}-${year}`);
+        }
+        if (cars.some((c) => c.slug === rawSlug && c.id !== existingId)) {
+          rawSlug = `${rawSlug}-${Date.now().toString().slice(-4)}`;
+        }
+
+        const featuresList = document.getElementById('carFeaturesText').value
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((text) => ({ text }));
+
+        const galleryList = document.getElementById('carGalleryUrls').value
+          .split('\n')
+          .map((line) => line.trim())
+          .filter(Boolean)
+          .map((url, idx) => ({ url, alt: `${name} - صورة ${idx + 1}` }));
+
+        const carObj = {
+          id: existingId || 'car-' + Date.now(),
+          createdAt: document.getElementById('carCreatedAt').value || new Date().toISOString(),
+          slug: rawSlug,
+          name,
+          brand: document.getElementById('carBrand').value.trim(),
+          year,
+          price: Number(document.getElementById('carPrice').value),
+          negotiable: document.getElementById('carNegotiable').checked,
+          bodyType: document.getElementById('carBodyType').value,
+          condition: document.getElementById('carCondition').value,
+          mileage: Number(document.getElementById('carMileage').value || 0),
+          transmission: document.getElementById('carTransmission').value,
+          fuel: document.getElementById('carFuel').value,
+          engineCc: Number(document.getElementById('carEngineCc').value || 0) || null,
+          color: document.getElementById('carColor').value.trim(),
+          status: document.getElementById('carStatus').value,
+          featured: document.getElementById('carFeatured').checked,
+          description: document.getElementById('carDescription').value.trim(),
+          features: featuresList,
+          imageUrl: document.getElementById('carImageUrl').value.trim(),
+          imageAlt: document.getElementById('carImageAlt').value.trim() || name,
+          gallery: galleryList,
+        };
+
+        btn.disabled = true;
+        btn.textContent = 'جاري الحفظ...';
+
+        try {
+          await Store.upsertCar(carObj);
+          window.closeCarModal();
+          refreshAll();
+          showToast(existingId ? 'تم تحديث العربية ونشرها على الموقع' : 'تمت إضافة العربية ونشرها على الموقع');
+        } catch (err) {
+          console.error(err);
+          showToast('تعذر الحفظ: تأكد من حجم الصور أو صلاحيات Firestore');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'حفظ ونشر على الموقع';
+        }
+      };
+
+      window.toggleCarFeatured = async function (id) {
+        const car = Store.getCars().find((c) => c.id === id);
+        if (!car) return;
+        try {
+          await Store.upsertCar(Object.assign({}, car, { featured: !car.featured }));
+          showToast(!car.featured ? 'تم تمييز العربية في الصفحة الرئيسية' : 'تم إلغاء تمييز العربية');
+        } catch {
+          showToast('حدث خطأ أثناء التحديث');
+        }
+      };
+
+      window.quickUpdateCarStatus = async function (id, status) {
+        const car = Store.getCars().find((c) => c.id === id);
+        if (!car) return;
+        try {
+          await Store.upsertCar(Object.assign({}, car, { status }));
+          showToast('تم تحديث حالة العربية على الموقع');
+        } catch {
+          showToast('حدث خطأ أثناء تحديث الحالة');
+        }
+      };
+
+      window.duplicateCar = async function (id) {
+        const car = Store.getCars().find((c) => c.id === id);
+        if (!car) return;
+        const copy = JSON.parse(JSON.stringify(car));
+        copy.id = 'car-' + Date.now();
+        copy.createdAt = new Date().toISOString();
+        copy.name = car.name + ' (نسخة)';
+        copy.slug = car.slug + '-' + Date.now().toString().slice(-4);
+        try {
+          await Store.upsertCar(copy);
+          showToast('تم نسخ العربية بنجاح');
+        } catch {
+          showToast('تعذر نسخ العربية');
+        }
+      };
+
+      window.deleteCar = async function (id) {
+        if (!confirm('متأكد إنك عايز تحذف العربية دي نهائياً من المعرض؟')) return;
+        try {
+          await Store.deleteCar(id);
+          refreshAll();
+          showToast('تم حذف العربية');
+        } catch {
+          showToast('تعذر حذف العربية');
+        }
+      };
+
+      // ==================== INQUIRIES CRUD ====================
+      window.openInquiryModal = function () {
+        document.getElementById('manualInquiryForm').reset();
+        document.getElementById('inquiryModal').classList.add('open');
+      };
+
+      window.closeInquiryModal = function () {
+        document.getElementById('inquiryModal').classList.remove('open');
+      };
+
+      window.saveManualInquiry = async function (e) {
+        e.preventDefault();
+        try {
+          await Store.addInquiry({
+            name: document.getElementById('inqName').value,
+            phone: document.getElementById('inqPhone').value,
+            kind: document.getElementById('inqKind').value,
+            carName: document.getElementById('inqCarName').value,
+            preferredTime: document.getElementById('inqPreferredTime').value,
+            message: document.getElementById('inqMessage').value,
+          });
+          window.closeInquiryModal();
+          refreshAll();
+          showToast('تم تسجيل الطلب بنجاح');
+        } catch {
+          showToast('تعذر حفظ الطلب');
+        }
+      };
+
+      window.updateInquiryStatus = async function (id, status) {
+        try {
+          await Store.updateInquiryStatus(id, status);
+          showToast('تم تحديث حالة الطلب');
+        } catch {
+          showToast('تعذر تحديث حالة الطلب');
+        }
+      };
+
+      window.deleteInquiry = async function (id) {
+        if (!confirm('حذف هذا الطلب نهائياً؟')) return;
+        try {
+          await Store.deleteInquiry(id);
+          refreshAll();
+          showToast('تم حذف الطلب');
+        } catch {
+          showToast('تعذر حذف الطلب');
+        }
+      };
+
+      // ==================== SETTINGS SAVE ====================
+      window.saveSettingsForm = async function (e) {
+        e.preventDefault();
+        const updated = {
+          phone: document.getElementById('setPhone').value.trim(),
+          whatsapp: document.getElementById('setWhatsapp').value.trim(),
+          ownerName: document.getElementById('setOwnerName').value.trim(),
+          hours: document.getElementById('setHours').value.trim(),
+          address: document.getElementById('setAddress').value.trim(),
+          mapUrl: document.getElementById('setMapUrl').value.trim(),
+          facebook: document.getElementById('setFacebook').value.trim(),
+          instagram: document.getElementById('setInstagram').value.trim(),
+          ownerNote: document.getElementById('setOwnerNote').value.trim(),
+        };
+
+        try {
+          await Store.saveSettings(updated);
+          showToast('تم حفظ الإعدادات وتحديث الموقع مباشرة');
+        } catch {
+          showToast('تعذر حفظ الإعدادات');
+        }
+      };
+
+      // ==================== BACKUP & SEED ====================
+      window.handleSeedFirebase = async function () {
+        if (!confirm('سيتم رفع السيارات الافتراضية وإعدادات المعرض إلى Firebase Firestore. متابعة؟')) return;
+        try {
+          await Store.seedDefaultsToFirebase();
+          refreshAll();
+          showToast('تم رفع البيانات الافتراضية إلى Firebase بنجاح');
+        } catch (err) {
+          showToast(err.message || 'حدث خطأ أثناء الرفع');
+        }
+      };
+
+      window.exportBackup = function () {
+        const payload = {
+          exportedAt: new Date().toISOString(),
+          cars: Store.getCars(),
+          settings: Store.getSettings(),
+          inquiries: Store.getInquiries(),
+        };
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ghazy-auto-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('تم تحميل ملف النسخة الاحتياطية');
+      };
+
+      window.importBackup = function (e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async function (ev) {
+          try {
+            const data = JSON.parse(ev.target.result);
+            if (!data || !Array.isArray(data.cars)) throw new Error('Invalid');
+            await Store.saveCars(data.cars);
+            if (data.settings) await Store.saveSettings(data.settings);
+            refreshAll();
+            showToast('تم استيراد النسخة الاحتياطية وتحديث Firebase');
+          } catch {
+            showToast('فشل قراءة الملف أو رفعه: تأكد إنه ملف JSON سليم');
+          }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+      };
+
+      // Real-time refresh whenever Firestore snapshot fires
+      window.addEventListener('ghazy:data-changed', () => {
+        refreshAll();
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: /ghazy-private-8829
+Disallow: /admin
